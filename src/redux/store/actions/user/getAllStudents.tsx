@@ -3,19 +3,16 @@ import { AxiosError } from "axios";
 import { config } from "../../../../common/config";
 import { CLIENT_API } from "../../../../utilities/axios/instance";
 
-export const getAllStudentsAction = createAsyncThunk(
+export const getAllStudents = createAsyncThunk(
     'admin/get-instructors',
     async (data: { page?: string | number; limit?: string | number, search?: string }, { rejectWithValue }) => {
         try {
             let query = "?";
-            if (data?.page) {
+            if (data?.page !== null) {
                 query += `page=${data.page}&`;
             }
-            if (data?.limit) {
+            if (data?.limit !== null) {
                 query += `limit=${data.limit}`;
-            }
-            if(data.search){
-                query += `search=${data.search}`
             }
 
             const response = await CLIENT_API.get(`/user/get-all-students${query}`, config);

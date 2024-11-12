@@ -5,15 +5,15 @@ import { CLIENT_API } from "../../../../utilities/axios/instance";
 import { config } from "../../../../common/config";
 
 
-export const getAllInstructorsAction = createAsyncThunk(
+export const getAllInstructors = createAsyncThunk(
     'admin/get-instructors',
     async (data: { page?: string | number | null; limit?: string | number | null }, { rejectWithValue }) => {
         try {
             let query = "?";
-            if (data?.page) {
+            if (data?.page !== null) {
                 query += `page=${data.page}&`;
             }
-            if (data?.limit) {
+            if (data?.limit !== null) {
                 query += `limit=${data.limit}`;
             }
 

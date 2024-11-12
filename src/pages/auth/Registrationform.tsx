@@ -1,18 +1,47 @@
-import { useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { SignupFormData } from '../../types';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { registrationValidationSchema } from '../../utilities/validation/registrationSchema';
-import { useAppDispatch } from '../../hooks/hooks';
-import { registerAction } from '../../redux/store/actions/auth';
-import { uploadToCloudinary } from '../../utilities/axios/claudinary';
+import { useState } from "react";
+import {
+  Formik,
+  Form,
+  Field,
+  ErrorMessage,
+  FieldProps,
+  FormikValues,
+} from "formik";
+import { SignupFormData } from "../../types";
+import { useLocation, useNavigate } from "react-router-dom";
+import { registrationValidationSchema } from "../../utilities/validation/registrationSchema";
+import { useAppDispatch } from "../../hooks/hooks";
+import { registerAction } from "../../redux/store/actions/auth";
+import { uploadToCloudinary } from "../../utilities/axios/claudinary";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+
 
 // Gender Enum
 enum Gender {
-  Male = 'male',
-  Female = 'female',
-  Other = 'other',
+  Male = "male",
+  Female = "female",
+  Other = "other",
 }
+const qualifications = [
+  "BCom",
+  "BCA",
+  "MCom",
+  "MCA",
+  "BA",
+  "BSc",
+  "MBA",
+  "BBA",
+  "BTech",
+  "MTech",
+  "PhD",
+  "Diploma",
+  "MSc",
+  "Engineering",
+  "Medicine",
+  "10th",
+  "+2",
+];
 
 const RegistrationForm = () => {
   const location = useLocation();
@@ -21,52 +50,60 @@ const RegistrationForm = () => {
   const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
-  
+
   const initialValues: SignupFormData = {
-    userName: userData.userName || '',
-    email: userData.email || '',
-    firstName: '',
-    lastName: '',
+    userName: userData.userName || "",
+    email: userData.email || "",
+    firstName: "",
+    lastName: "",
     profile: {
       avatar: undefined,
-      dateOfBirth: '',
+      dateOfBirth: "",
       gender: undefined,
     },
     contact: {
-      phone: '',
-      social: '',
-      address: '',
+      phone: "",
+      social: "",
+      address: "",
     },
     profession: undefined,
-    qualification: '',
-    profit: '',
+    qualification: "",
+    profit: "",
     cv: undefined,
   };
 
-  const handleSubmit = async(values: SignupFormData) => {
-    try{
+  const handleSubmit = async (values: SignupFormData) => {
+    try {
       const avatar = await uploadToCloudinary(values?.profile?.avatar);
+      const dateOfBirth = values?.profile?.dateOfBirth;
+      const gender = values?.profile?.gender;
       const cv = await uploadToCloudinary(values?.cv);
-      values = {...values,profile:{avatar:avatar},cv:cv}
-    const data = {...values,isGAuth:userData.isGAuth?true:false,role:userData.role,password:userData.password};
-    const response = await dispatch(registerAction(data));
-    if(response.payload.success){
-      navigate(`/${userData.role}`)
-    }
-
-    }
-    catch(error:unknown){
+      values = {
+        ...values,
+        profile: { avatar: avatar, dateOfBirth: dateOfBirth, gender: gender },
+        cv: cv,
+      };
+      const data = {
+        ...values,
+        isGAuth: userData.isGAuth ? true : false,
+        role: userData.role,
+        password: userData.password,
+      };
+      const response = await dispatch(registerAction(data));
+      if (response.payload.success) {
+        navigate(`/${userData.role}`);
+      }
+    } catch (error: unknown) {
       console.error(error);
-
-      
     }
-
   };
 
   return (
     <div className=" registration-form  p-8 rounded-md shadow-lg  max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 dark:text-white text-center">
-        {userData?.role === 'student' ? 'Student Registration Form' : 'Instructor Registration Form'}
+        {userData?.role === "student"
+          ? "Student Registration Form"
+          : "Instructor Registration Form"}
       </h2>
 
       <Formik
@@ -95,9 +132,9 @@ const RegistrationForm = () => {
                 <button
                   type="button"
                   className="absolute bottom-0 right-0 px-2 py-1 text-sm bg-gray-500 text-white rounded-full"
-                  onClick={() => document.getElementById('avatar')?.click()}
+                  onClick={() => document.getElementById("avatar")?.click()}
                 >
-                  {avatarPreview ? 'Edit' : 'Add'}
+                  {avatarPreview ? "Edit" : "Add"}
                 </button>
               </div>
               <input
@@ -107,11 +144,14 @@ const RegistrationForm = () => {
                 accept="image/*"
                 className="hidden"
                 onChange={(event) => {
-                  const file = event.target.files ? event.target.files[0] : undefined;
-                  setFieldValue('profile.avatar', file);
+                  const file = event.target.files
+                    ? event.target.files[0]
+                    : undefined;
+                  setFieldValue("profile.avatar", file);
                   if (file) {
                     const reader = new FileReader();
-                    reader.onload = () => setAvatarPreview(reader.result as string);
+                    reader.onload = () =>
+                      setAvatarPreview(reader.result as string);
                     reader.readAsDataURL(file);
                   }
                 }}
@@ -120,73 +160,140 @@ const RegistrationForm = () => {
 
             {/* Username and Email */}
             <div>
-              <label htmlFor="userName" className="block text-gray-700 dark:text-gray-300">Username:</label>
+              <label
+                htmlFor="userName"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Username:
+              </label>
               <Field
                 type="text"
                 id="userName"
                 name="userName"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="userName" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="userName"
+                component="div"
+                className="text-red-500"
+              />
             </div>
             <div>
-              <label htmlFor="email" className="block text-gray-700 dark:text-gray-300">Email:</label>
+              <label
+                htmlFor="email"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Email:
+              </label>
               <Field
                 type="email"
                 id="email"
                 name="email"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="email" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             {/* First Name and Last Name */}
             <div>
-              <label htmlFor="firstName" className="block text-gray-700 dark:text-gray-300">First Name:</label>
+              <label
+                htmlFor="firstName"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                First Name:
+              </label>
               <Field
                 type="text"
                 id="firstName"
                 name="firstName"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="firstName" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="firstName"
+                component="div"
+                className="text-red-500"
+              />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-gray-700 dark:text-gray-300">Last Name:</label>
+              <label
+                htmlFor="lastName"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Last Name:
+              </label>
               <Field
                 type="text"
                 id="lastName"
                 name="lastName"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="lastName" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="lastName"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             {/* Date of Birth and Phone */}
             <div>
-              <label htmlFor="dateOfBirth" className="block text-gray-700 dark:text-gray-300">Date of Birth:</label>
+              <label
+                htmlFor="dateOfBirth"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Date of Birth:
+              </label>
               <Field
                 type="date"
                 id="dateOfBirth"
                 name="profile.dateOfBirth"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="profile.dateOfBirth" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="profile.dateOfBirth"
+                component="div"
+                className="text-red-500"
+              />
             </div>
             <div>
-              <label htmlFor="phone" className="block text-gray-700 dark:text-gray-300">Phone:</label>
+              <label
+                htmlFor="phone"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Phone:
+              </label>
               <Field
-                type="text"
-                id="phone"
                 name="contact.phone"
-                className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                render={({ field, form }: FieldProps<string, FormikValues>) => (
+                  <PhoneInput
+                    id="phone"
+                    {...field}
+                    defaultCountry="US"
+                    international
+                    onChange={(value: string | undefined) =>
+                      form.setFieldValue("contact.phone", value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                )}
               />
-              <ErrorMessage name="contact.phone" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="contact.phone"
+                component="div"
+                className="text-red-500"
+              />
             </div>
-
             {/* Gender */}
-            <div >
-              <label htmlFor="gender" className="block text-gray-700 dark:text-gray-300">Gender:</label>
+            <div>
+              <label
+                htmlFor="gender"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Gender:
+              </label>
               <Field
                 as="select"
                 id="gender"
@@ -198,47 +305,94 @@ const RegistrationForm = () => {
                 <option value={Gender.Female}>{Gender.Female}</option>
                 <option value={Gender.Other}>{Gender.Other}</option>
               </Field>
-              <ErrorMessage name="profile.gender" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="profile.gender"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             {/* Address */}
             <div className="md:col-span-3">
-              <label htmlFor="address" className="block text-gray-700 dark:text-gray-300">Address:</label>
+              <label
+                htmlFor="address"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Address:
+              </label>
               <Field
                 type="text"
                 id="address"
                 name="contact.address"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-              <ErrorMessage name="contact.address" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="contact.address"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             {/* Profession and Qualification */}
             <div>
-              <label htmlFor="profession" className="block text-gray-700 dark:text-gray-300">Profession:</label>
+              <label
+                htmlFor="profession"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Profession:
+              </label>
               <Field
-                type="text"
+                as="select"
                 id="profession"
                 name="profession"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="">Select Profession</option>
+                <option value="working">Working</option>
+                <option value="student">Student</option>
+              </Field>
+              <ErrorMessage
+                name="profession"
+                component="div"
+                className="text-red-500"
               />
-              <ErrorMessage name="profession" component="div" className="text-red-500" />
             </div>
             <div>
-              <label htmlFor="qualification" className="block text-gray-700 dark:text-gray-300">Qualification:</label>
+              <label
+                htmlFor="qualification"
+                className="block text-gray-700 dark:text-gray-300"
+              >
+                Qualification:
+              </label>
               <Field
-                type="text"
+                as="select"
                 id="qualification"
                 name="qualification"
                 className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="">Select Qualification</option>
+                {qualifications.map((qualification, index) => (
+                  <option key={index} value={qualification}>
+                    {qualification}
+                  </option>
+                ))}
+              </Field>
+              <ErrorMessage
+                name="qualification"
+                component="div"
+                className="text-red-500"
               />
-              <ErrorMessage name="qualification" component="div" className="text-red-500" />
             </div>
 
             {/* CV Upload (conditional for instructors) */}
-            {userData.role === 'instructor' && (
-              <div >
-                <label htmlFor="cv" className="block text-gray-700 dark:text-gray-300">Upload CV:</label>
+            {userData.role === "instructor" && (
+              <div>
+                <label
+                  htmlFor="cv"
+                  className="block text-gray-700 dark:text-gray-300"
+                >
+                  Upload CV:
+                </label>
                 <input
                   type="file"
                   id="cv"
@@ -246,11 +400,17 @@ const RegistrationForm = () => {
                   accept=".pdf,.doc,.docx"
                   className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   onChange={(event) => {
-                    const file = event.currentTarget.files ? event.currentTarget.files[0] : undefined;
-                    setFieldValue('cv', file);
+                    const file = event.currentTarget.files
+                      ? event.currentTarget.files[0]
+                      : undefined;
+                    setFieldValue("cv", file);
                   }}
                 />
-                <ErrorMessage name="cv" component="div" className="text-red-500" />
+                <ErrorMessage
+                  name="cv"
+                  component="div"
+                  className="text-red-500"
+                />
               </div>
             )}
 

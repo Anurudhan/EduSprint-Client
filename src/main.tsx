@@ -9,6 +9,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { env } from "./common/env.ts";
 
 const clientId = String(env.CLIENT_ID);
+console.log(clientId);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
