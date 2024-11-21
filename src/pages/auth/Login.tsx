@@ -20,6 +20,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ForgotPasswordModal from "../../components/user/ForgotPasswordModal";
 import { forgotPasswordMailAction } from "../../redux/store/actions/auth/forgotPasswordMailAction";
 import { Player } from "@lottiefiles/react-lottie-player";
+import { Link } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -54,17 +55,17 @@ const Login: React.FC = () => {
     setIsForgotPasswordOpen(!isForgotPasswordOpen);
   };
 
-  const handleForgotPasswordSubmit = async (email: string) => {
-    try {
-      const result = await dispatch(forgotPasswordMailAction(email));
-      if(result) toast.success("Password reset link sent to your email.");
-      else toast.error("Password reset link not generate.");
-    } catch (error) {
-        console.log(error);
-        
-      toast.error("Failed to send password reset link. Try again.");
-    }
-  };
+    const handleForgotPasswordSubmit = async (email: string) => {
+      try {
+        const result = await dispatch(forgotPasswordMailAction(email));
+        if(result) toast.success("Password reset link sent to your email.");
+        else toast.error("Password reset link not generate.");
+      } catch (error) {
+          console.log(error);
+          
+        toast.error("Failed to send password reset link. Try again.");
+      }
+    };
 
   const formik = useFormik({
     initialValues: {
@@ -79,20 +80,20 @@ const Login: React.FC = () => {
 
         if (!loginResult.payload?.success) {
           // Display error message from the server
-          setErrorMessage(
-            loginResult.payload?.message || "Login failed. Please try again."
+          toast.error(
+            loginResult.payload?.message ?? "Login failed. Please try again."
           );
         } else {
           // Check if user is verified
           if (loginResult.payload.data.isVerified) {
             // Navigate to the appropriate route based on user type
-            navigate(`/${userType.toLowerCase()}`,{replace:true});
+            navigate(`/${loginResult.payload.data?.role}`,{replace:true});
           } else {
             const allData: SignupFormData = {
               ...data,
               isGAuth: false,
             };
-            navigate(`/${userType.toLowerCase()}/form`, { state: allData ,replace:true});
+            navigate(`/${loginResult.payload.data?.role}-form`, { state: allData ,replace:true});
           }
         }
       } catch (error) {
@@ -107,11 +108,14 @@ const Login: React.FC = () => {
     credentialResponse: CredentialResponse
   ) => {
     try {
-      const response = await dispatch(googleAuthAction(credentialResponse));
-      if (response.payload.success && response?.payload?.data?.isVerified) {
-        navigate(`/${userType.toLowerCase()}`,{replace:true});
+      const response = await dispatch(googleAuthAction({ credentials: credentialResponse, userType }));
+      if (response.payload.success ) {
+        if(!response.payload.data?.isRequested){
+          navigate(`/${response.payload.data?.role}-form`,{replace:true});
+        }
+        navigate(`/${response.payload.data?.role}`,{replace:true});
       } else {
-        toast.error(response.payload.message || "Google login failed");
+        toast.error(response.payload.message ?? "Google login failed");
       }
     } catch (error) {
       console.error("Google login error:", error);
@@ -255,12 +259,12 @@ const Login: React.FC = () => {
         <span className="text-gray-500 dark:text-gray-300">
           Don't have an account?{" "}
         </span>
-        <a
-          href={`/signup/?role=${userType}`}
+        <Link
+          to={`/signup/?role=${userType}`}
           className="text-blue-500 dark:text-blue-400 hover:underline"
         >
           Sign Up
-        </a>
+        </Link>
       </div>}
     </div>
   </div>

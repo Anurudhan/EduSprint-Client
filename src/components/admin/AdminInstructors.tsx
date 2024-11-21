@@ -6,6 +6,10 @@ import UsersList from "./UsersList";
 import LoadingSpinner from "../common/loadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
 import { getAllInstructors } from "../../redux/store/actions/user";
+import ManageUserModal from "./ManageUserModal";
+import { unblockBlockUser } from "../../redux/store/actions/user/unblockBlockUser";
+import { MessageType } from "../../types/IMessageType";
+import MessageToast from "../common/MessageToast";
 
 const AdminInstructors = () => {
     const dispatch = useAppDispatch();
@@ -13,6 +17,10 @@ const AdminInstructors = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedUser , setSelectedUser ] = useState<SignupFormData | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [message, setMessage] = useState("");
+    const [type, setType] = useState<MessageType>("error");
 
     const fetchInstructors = useCallback(async () => {
         setLoading(true);
@@ -59,13 +67,47 @@ const AdminInstructors = () => {
             setCurrentPage((prevPage) => prevPage - 1);
         }
     };
-
+    const handleEditClick = (user: SignupFormData) => {
+        setSelectedUser (user);
+        setIsModalOpen(true);
+    };
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser (null);
+    };
+    const handleToggleBlock = async() => {
+        try{
+        if (selectedUser ) {
+            const response = await dispatch(unblockBlockUser({ ...selectedUser,isBlocked:!selectedUser.isBlocked}));
+            if (response.payload.success) {
+                setMessage(`${selectedUser.email} ${selectedUser?.isBlocked ? "unblocked" : "blocked"} successfully!`);
+                setType("success")
+                fetchInstructors();
+            } else {
+                setMessage(`Failed to ${selectedUser?.isBlocked? "unblock" : "block"} instructor`);
+                setType("error")
+            }
+            handleCloseModal();
+        }}
+        catch(error:unknown){
+            console.log(error);
+        }
+    };
+    const handleMessage = async (Message: string): Promise<void> => {
+        setMessage(Message);
+      };
     return (
         <div className="p-4">
             <h2 className="text-xl font-semibold mb-4 dark:text-white">
                 Instructors
             </h2>
-            
+            {message && (
+        <MessageToast
+          message={message}
+          type={type}
+          onMessage={(Message) => handleMessage(Message)}
+        />
+      )}
             {error && (
                 <div className="mb-4">
                     <ErrorMessage 
@@ -74,7 +116,13 @@ const AdminInstructors = () => {
                     />
                 </div>
             )}
-
+            {isModalOpen && (
+                <ManageUserModal 
+                    user={selectedUser } 
+                    onClose={handleCloseModal} 
+                    onToggleBlock={handleToggleBlock}
+                />
+            )}
             {loading ? (
                 <LoadingSpinner />
             ) : (
@@ -82,6 +130,7 @@ const AdminInstructors = () => {
                     users={instructors} 
                     onNextPage={handleNextPage}
                     onPreviousPage={handlePreviousPage}
+                    onEdit={handleEditClick}
                     currentPage={currentPage}
                 />
             )}

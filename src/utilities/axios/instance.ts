@@ -12,5 +12,4 @@ export const BASE_URL = isDevelopment
 
 export const CLIENT_API = axios.create({
     baseURL: BASE_URL
-    
 })

@@ -1,33 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import LogoCondent from "../../assets/Screenshot 2024-09-30 112131_processed.png";
 import {
   LayoutDashboard,
   BookOpen,
   Users,
   ClipboardList,
-  Receipt,
-  Image,
-  UserPlus,
-  AlertCircle,
   Settings,
   LogOut,
   Sun,
   Moon,
   Menu,
   X,
-  LucideIcon,
+  type LucideIcon,
+  MessageCircle,
+  TrendingUp,
+  Calendar,
+  FileText,
+  DollarSign,
+  Award,
+  Video,
+  Bell,
+  BookMarked,
+  UserCog,
 } from 'lucide-react';
+import ConfirmationModal from '../common/ConfirmationModal';
+import { logoutAction } from '../../redux/store/actions/auth';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux';
-import { logoutAction } from '../../redux/store/actions/auth';
-import ConfirmationModal from '../common/ConfirmationModal';
 import { useAppSelector } from '../../hooks/hooks';
+import LogoCondent from "../../assets/Screenshot 2024-09-30 112131_processed.png";
 
 interface NavItemProps {
   icon: LucideIcon;
   label: string;
   path: string;
+  badge?: number;
 }
 
 interface SidebarProps {
@@ -35,28 +42,101 @@ interface SidebarProps {
   toggleTheme: () => void;
 }
 
-const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
+const InstructorSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { data } = useAppSelector((state: RootState) => state.user);
+//   const [notifications, setNotifications] = useState(5); // Demo notification count
+  const navigate = useNavigate(); 
+  const dispatch = useDispatch<AppDispatch>();  
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const menuItems: NavItemProps[] = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: BookOpen, label: 'Courses', path: '/admin/courses' },
-    { icon: Users, label: 'Manage Users', path: '/admin/users' },
-    { icon: ClipboardList, label: 'Assessments', path: '/admin/assessments' },
-    { icon: Receipt, label: 'Transactions', path: '/admin/transactions' },
-    { icon: Image, label: 'Banners', path: '/admin/banners' },
-    { icon: UserPlus, label: 'Requests', path: '/admin/requests' },
-    { icon: AlertCircle, label: 'Complaints', path: '/admin/complaints' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { 
+      icon: LayoutDashboard, 
+      label: 'Dashboard', 
+      path: '/instructor/dashboard'
+    },
+    { 
+      icon: BookOpen, 
+      label: 'My Courses', 
+      path: '/instructor/courses',
+      badge: 12 // Demo: Number of active courses
+    },
+    { 
+      icon: Video, 
+      label: 'Live Sessions', 
+      path: '/instructor/live-sessions',
+      badge: 2 // Demo: Upcoming sessions
+    },
+    { 
+      icon: Users, 
+      label: 'Students', 
+      path: '/instructor/students',
+      badge: 156 // Demo: Total enrolled students
+    },
+    { 
+      icon: ClipboardList, 
+      label: 'Assessments', 
+      path: '/instructor/assessments',
+      badge: 3 // Demo: Pending assessments
+    },
+    { 
+      icon: FileText, 
+      label: 'Course Materials', 
+      path: '/instructor/materials'
+    },
+    { 
+      icon: Calendar, 
+      label: 'Schedule', 
+      path: '/instructor/schedule',
+      badge: 4 // Demo: Today's events
+    },
+    { 
+      icon: TrendingUp, 
+      label: 'Analytics', 
+      path: '/instructor/analytics'
+    },
+    { 
+      icon: DollarSign, 
+      label: 'Earnings', 
+      path: '/instructor/earnings'
+    },
+    { 
+      icon: MessageCircle, 
+      label: 'Messages', 
+      path: '/instructor/messages',
+      badge: 8 // Demo: Unread messages
+    },
+    { 
+      icon: Award, 
+      label: 'Certifications', 
+      path: '/instructor/certifications'
+    },
+    { 
+      icon: BookMarked, 
+      label: 'Resources', 
+      path: '/instructor/resources'
+    },
+    { 
+      icon: Bell, 
+      label: 'Notifications', 
+      path: '/instructor/notifications',
+      badge: 5
+    },
+    { 
+      icon: UserCog, 
+      label: 'Profile', 
+      path: '/instructor/profile'
+    },
+    { 
+      icon: Settings, 
+      label: 'Settings', 
+      path: '/instructor/settings'
+    },
   ];
 
   useEffect(() => {
-    // Apply dark or light theme classes to the document root
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -64,46 +144,53 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     }
   }, [isDarkMode]);
 
-  const toggleSidebar = (): void => {
+  const toggleSidebar = () => {
     setIsOpen(!isOpen);
     if (window.innerWidth < 768) {
       setIsMobileMenuOpen(!isMobileMenuOpen);
     }
   };
+
   const handleLogout = () => {
     setIsLogoutModalOpen(true);
   };
-
-   const confirmLogout = () => {
+  const confirmLogout = () => {
     dispatch(logoutAction());
     navigate('/home');
     setIsLogoutModalOpen(false);
   };
-
   const cancelLogout = () => {
     setIsLogoutModalOpen(false);
   };
-
-  const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, path }) => (
+  const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, path, badge }) => (
     <NavLink
       to={path}
       className={({ isActive }) => `
         flex items-center px-4 py-3 text-gray-700 dark:text-gray-200
         transition-colors duration-200 gap-4 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg
         ${isActive ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400' : ''}
+        relative
       `}
       onClick={() => window.innerWidth < 768 && setIsMobileMenuOpen(false)}
     >
       <Icon size={20} />
-      <span className={`${!isOpen && 'hidden'} transition-all duration-200`}>
+      <span className={`${!isOpen && 'hidden'} transition-all duration-200 flex-1`}>
         {label}
       </span>
+      {badge && badge > 0 && (
+        <span className={`
+          ${!isOpen && 'hidden'}
+          absolute right-4 bg-red-500 text-white text-xs font-bold
+          px-2 py-1 rounded-full min-w-[20px] text-center
+        `}>
+          {badge}
+        </span>
+      )}
     </NavLink>
   );
 
   return (
     <>
-      {/* Mobile Menu Button */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
         onClick={toggleSidebar}
@@ -111,7 +198,6 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Overlay */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30"
@@ -119,24 +205,22 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed md:static z-40 h-full
-          ${isOpen ? 'w-64' : 'w-20'}
+          ${isOpen ? 'w-72' : 'w-20'}
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           transition-all duration-300
           bg-white dark:bg-gray-800 shadow-xl
         `}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="flex items-center justify-between px-4 py-6">
-            <div className={`${isOpen ? 'active' : 'hidden'} flex items-center`}>
-              <img
+            <div className={`${isOpen ? 'block' : 'hidden'} flex items-center`}>
+            <img
                 src={LogoCondent}
                 alt="EduSprint"
-                className="h-24 w-48"
+                className="h-24 w-48 "
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   e.currentTarget.src = 'https://via.placeholder.com/32';
                 }}
@@ -144,11 +228,12 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
             </div>
             <button
               onClick={toggleSidebar}
-              className="hidden md:block"
+              className="hidden md:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Menu size={20} />
             </button>
           </div>
+
           <div className={`
             ${isOpen ? 'px-4 py-2' : 'hidden'}
             border-b dark:border-gray-700 mb-4
@@ -164,20 +249,18 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
                   {data?.userName}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Supper Admin
+                  Senior Instructor
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
             {menuItems.map((item) => (
               <NavItem key={item.path} {...item} />
             ))}
           </nav>
 
-          {/* Footer */}
           <div className="p-4 border-t dark:border-gray-700">
             <button
               onClick={toggleTheme}
@@ -190,10 +273,10 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
               </span>
             </button>
             <button
+              onClick={handleLogout}
               className="flex items-center w-full px-4 py-3 mt-2 gap-4
                 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
                 rounded-lg transition-colors duration-200"
-                onClick={handleLogout}
             >
               <LogOut size={20} />
               <span className={`${!isOpen && 'hidden'}`}>Logout</span>
@@ -215,4 +298,4 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
   );
 };
 
-export default AdminSidebar;
+export default InstructorSidebar;

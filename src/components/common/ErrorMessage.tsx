@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
+import { MessageType } from '../../types/IMessageType';
 
-interface ErrorMessageProps {
+
+
+export interface ErrorMessageProps {
   message: string;
-  type?: 'error' | 'warning' | 'info'; 
+  type?:MessageType
 }
+
 
 const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, type = 'error' }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -16,6 +20,8 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, type = 'error' }) 
         return 'bg-yellow-100 text-yellow-700';
       case 'info':
         return 'bg-blue-100 text-blue-700';
+      case 'success':
+        return 'bg-green-100 text-green-700';
       default:
         return 'bg-red-100 text-red-700'; // Default is error
     }

@@ -7,15 +7,16 @@ import {
   FieldProps,
   FormikValues,
 } from "formik";
-import { SignupFormData } from "../../types";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Role, SignupFormData } from "../../types";
+import { useNavigate } from "react-router-dom";
 import { registrationValidationSchema } from "../../utilities/validation/registrationSchema";
-import { useAppDispatch } from "../../hooks/hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { registerAction } from "../../redux/store/actions/auth";
 import { uploadToCloudinary } from "../../utilities/axios/claudinary";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-
+import { RootState } from "../../redux";
+import LoadingSpinner from "../../components/common/loadingSpinner";
 
 // Gender Enum
 enum Gender {
@@ -44,16 +45,23 @@ const qualifications = [
 ];
 
 const RegistrationForm = () => {
-  const location = useLocation();
-  const userData = location.state; // Retrieve userData from navigation state
+  const userData = {
+    userName: localStorage.getItem("userName"),
+    email: localStorage.getItem("userEmail"),
+    password: localStorage.getItem("userPassword"),
+    role: localStorage.getItem("userRole"),
+    isGAuth: localStorage.getItem("isGAuth")==="true",
+  };
+  const fetchdata = useAppSelector((state: RootState) => state.user.data);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
 
   const initialValues: SignupFormData = {
-    userName: userData.userName || "",
-    email: userData.email || "",
+    userName: userData.userName ||fetchdata?.userName || "",
+    email: userData.email||fetchdata?.email || "",
     firstName: "",
     lastName: "",
     profile: {
@@ -74,6 +82,7 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (values: SignupFormData) => {
     try {
+      setIsLoading(true)
       const avatar = await uploadToCloudinary(values?.profile?.avatar);
       const dateOfBirth = values?.profile?.dateOfBirth;
       const gender = values?.profile?.gender;
@@ -85,14 +94,21 @@ const RegistrationForm = () => {
       };
       const data = {
         ...values,
-        isGAuth: userData.isGAuth ? true : false,
-        role: userData.role,
-        password: userData.password,
+        isGAuth: (userData.isGAuth||fetchdata?.isGAuth )? true : false,
+        role: userData.role as Role||fetchdata?.role as Role | undefined,
+        password: fetchdata?.password ?? undefined,
       };
       const response = await dispatch(registerAction(data));
       if (response.payload.success) {
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userPassword");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("isGAuth");
+        setIsLoading(false)
         navigate(`/${userData.role}`);
       }
+      setIsLoading(false)
     } catch (error: unknown) {
       console.error(error);
     }
@@ -101,7 +117,7 @@ const RegistrationForm = () => {
   return (
     <div className=" registration-form  p-8 rounded-md shadow-lg  max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 dark:text-white text-center">
-        {userData?.role === "student"
+        {userData?.role === "student"||fetchdata?.role==="student"
           ? "Student Registration Form"
           : "Instructor Registration Form"}
       </h2>
@@ -385,7 +401,7 @@ const RegistrationForm = () => {
             </div>
 
             {/* CV Upload (conditional for instructors) */}
-            {userData.role === "instructor" && (
+            {userData.role === "instructor"||fetchdata?.role==="instructor" && (
               <div>
                 <label
                   htmlFor="cv"
@@ -426,6 +442,7 @@ const RegistrationForm = () => {
           </Form>
         )}
       </Formik>
+      {isLoading && <LoadingSpinner />}
     </div>
   );
 };

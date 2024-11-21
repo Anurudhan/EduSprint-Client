@@ -1,6 +1,8 @@
 import { createSlice,PayloadAction } from "@reduxjs/toolkit";
 import { SignupFormData, Response } from "../../../types/IForm";
-import { getUserData, loginAction, logoutAction, registerAction, signupAction } from "../actions/auth";
+import { getUserData, loginAction, logoutAction, registerAction } from "../actions/auth";
+import { updateUser } from "../actions/user/updateUser";
+import { googleAuthAction } from "../actions/auth/googleAuthAction";
 
 
 
@@ -29,25 +31,7 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // signup user
-			.addCase(signupAction.pending, (state: userState) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(
-				signupAction.fulfilled,
-				(state: userState, action: PayloadAction<Response>) => {
-					state.loading = false;
-					state.data = action.payload.data || null;
-					state.error = null;
-				}
-			)
-			.addCase(signupAction.rejected, (state: userState, action) => {
-				state.loading = false;
-				state.error = action.error.message || "signup failed";
-				state.data = null;
-			})
-
+            
 			//Register-form
 			
 			.addCase(registerAction.pending, (state: userState) => {
@@ -120,7 +104,47 @@ const userSlice = createSlice({
 				state.loading = false;
 				state.data = null;
 				state.error = null;
-			});
+			})
+
+			// update-user
+
+			.addCase(updateUser.pending, (state: userState) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(
+				updateUser.fulfilled,
+				(state: userState, action: PayloadAction<Response>) => {
+					state.loading = false;
+					state.data = action.payload.data || null;
+					state.error = null;
+				}
+			)
+			.addCase(updateUser.rejected, (state: userState, action) => {
+				state.loading = false;
+				state.error = action.error.message || "Update User failed failed";
+				state.data = null;
+			})
+
+
+			// googleAction
+			.addCase(googleAuthAction.pending, (state: userState) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(
+				googleAuthAction.fulfilled,
+				(state: userState, action: PayloadAction<Response>) => {
+					state.loading = false;
+					state.data = action.payload.data || null;
+					state.error = null;
+				}
+			)
+			.addCase(googleAuthAction.rejected, (state: userState, action) => {
+				state.loading = false;
+				state.error = action.error.message || "Update User failed failed";
+				state.data = null;
+			})
     }
 
 })

@@ -5,6 +5,12 @@ import { SignupFormData } from "../../types";
 import UsersList from "./UsersList";
 import LoadingSpinner from "../common/loadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
+import ManageUserModal from "./ManageUserModal";
+import MessageToast from "../common/MessageToast";
+import { MessageType } from "../../types/IMessageType";
+import { unblockBlockUser } from "../../redux/store/actions/user/unblockBlockUser";
+
+
 
 
 const AdminStudents = () => {
@@ -13,6 +19,10 @@ const AdminStudents = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedUser , setSelectedUser ] = useState<SignupFormData | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [message, setMessage] = useState("");
+  const [type, setType] = useState<MessageType>("error");
 
     const fetchStudents = useCallback(async () => {
         setLoading(true);
@@ -50,6 +60,35 @@ const AdminStudents = () => {
     useEffect(() => {
         fetchStudents();
     }, [fetchStudents]);
+    
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser (null);
+    };
+    const handleEditClick = (user: SignupFormData) => {
+        setSelectedUser (user);
+        setIsModalOpen(true);
+    };
+    const handleToggleBlock = async() => {
+        try{
+        if (selectedUser ) {
+            const response = await dispatch(unblockBlockUser({ ...selectedUser,isBlocked:!selectedUser.isBlocked}));
+            if (response.payload.success) {
+                setMessage(`${selectedUser.email} ${selectedUser?.isBlocked ? "unblocked" : "blocked"} successfully!`);
+                setType("success")
+                fetchStudents();
+            } else {
+                setMessage(`Failed to ${selectedUser?.isBlocked? "unblock" : "block"} instructor`);
+                setType("error")
+            }
+            handleCloseModal();
+        }
+    }
+    catch(error:unknown){
+        setMessage(String(error));
+        setType("error")
+    }
+    };
 
     const handleNextPage = () => {
         setCurrentPage((prevPage) => prevPage + 1);
@@ -60,7 +99,10 @@ const AdminStudents = () => {
             setCurrentPage((prevPage) => prevPage - 1);
         }
     };
-
+    const handleMessage = async (Message: string): Promise<void> => {
+        setMessage(Message);
+      };
+    
     return (
         <div className="p-4">
             <h2 className="text-xl font-semibold mb-4 dark:text-white">
@@ -75,7 +117,20 @@ const AdminStudents = () => {
                     />
                 </div>
             )}
-
+            {message && (
+        <MessageToast
+          message={message}
+          type={type}
+          onMessage={(Message) => handleMessage(Message)}
+        />
+      )}
+            {isModalOpen && (
+                <ManageUserModal 
+                    user={selectedUser } 
+                    onClose={handleCloseModal} 
+                    onToggleBlock={handleToggleBlock}
+                />
+            )}
             {loading ? (
                 <LoadingSpinner />
             ) : (
@@ -83,6 +138,7 @@ const AdminStudents = () => {
                     users={students}
                     onNextPage={handleNextPage}
                     onPreviousPage={handlePreviousPage}
+                    onEdit={(user)=>handleEditClick(user)}
                     currentPage={currentPage}
                 />
             )}

@@ -6,12 +6,18 @@ import { Menu, X, Search, Sun, Moon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../../redux';
 import { logoutAction } from '../../../redux/store/actions/auth';
+import MessageToast from '../MessageToast';
+import { MessageType } from '../../../types/IMessageType';
+import ConfirmationModal from '../ConfirmationModal';
 
 
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('theme') === 'dark');
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState<MessageType>("error");
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -26,13 +32,6 @@ const Navbar = () => {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
-  const handleLogout = () => {
-    const confirmLogout = window.confirm("Are you sure you want to logout?");
-    if (confirmLogout) {
-      dispatch(logoutAction()); 
-      navigate('/home') 
-    }
-  };
 
   useEffect(() => {
     const theme = localStorage.getItem('theme');
@@ -42,12 +41,63 @@ const Navbar = () => {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+  const DashboardLink = () => {
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if(!userData?.isRequested){
+        setMessage("Please fill the register form!");
+        setType("info");
+      }
+      else if (userData?.isVerified) {
+        navigate(`/${userData.role}/dashboard`);
+      } else {
+        console.log("Setting message for unverified user"); // Debug log
+        setMessage("Please wait for eduSprint while your data is being verified.");
+        setType("info");
+      }
+    };
 
-  const navItems = [
+    return (
+      <a 
+        href="#" 
+        onClick={handleClick}
+        className="text-green-800 dark:text-gray-300 px-3 py-2 rounded-md text-sm font-medium"
+      >
+        Dashboard
+      </a>
+    );
+  };
+  
+  const handleMessage = async (Message: string): Promise<void> => {
+    setMessage(Message);
+  };
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+   const confirmLogout = () => {
+    dispatch(logoutAction());
+    navigate('/home');
+    setIsLogoutModalOpen(false);
+  };
+
+  const cancelLogout = () => {
+    setIsLogoutModalOpen(false);
+  };
+
+
+  const navItems = !userData?[
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/courses' },
     { name: 'Teach Us', path: '/teach-us' },
     { name: 'Contact Us', path: '/contact-us' },
+    { name: 'About Us', path: '/about-us' },
+  ]:[
+    { name: 'Home', path: '/' },
+    { name: 'Courses', path: '/courses' },
+    ...(userData.isRequested
+      ? [] 
+      : [{ name: 'Register', path: `/${userData.role}-form` }]),
     { name: 'About Us', path: '/about-us' },
   ];
 const avatar = userData?.profile?.avatar as string; 
@@ -68,6 +118,7 @@ const avatar = userData?.profile?.avatar as string;
                   {item.name}
                 </Link>
               ))}
+              {userData&&<DashboardLink/>}
             </div>
 
             <div className="relative w-64">
@@ -103,6 +154,16 @@ const avatar = userData?.profile?.avatar as string;
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        title="Logout Confirmation"
+        message="Are you sure you want to logout?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        onConfirm={confirmLogout  }
+        onCancel={cancelLogout}
+        isError={true}
+      />
 
       {isMenuOpen && (
         <div className="lg:hidden">
@@ -115,8 +176,16 @@ const avatar = userData?.profile?.avatar as string;
           </div>
         </div>
       )}
+      {message&&(
+        <MessageToast
+          message={message}
+          type={type}
+          onMessage={(Message) => handleMessage(Message)}
+        />
+      )}
     </nav>
   );
 };
+
 
 export default Navbar;

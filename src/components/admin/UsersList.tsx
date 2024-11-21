@@ -4,13 +4,20 @@ const UsersList = ({
     users,
     onNextPage,
     onPreviousPage,
+    onEdit,
     currentPage,
 }: { 
     users: SignupFormData[],
     onNextPage: () => void,
     onPreviousPage: () => void,
+    onEdit:(user: SignupFormData) => void,
     currentPage: number
-}) => (
+}) =>{
+    
+
+    
+     return (
+    
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -58,10 +65,12 @@ const UsersList = ({
                                 </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                    Edit
-                                </button>
-                            </td>
+                                    <button 
+                                        onClick={() => onEdit(user)} 
+                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                        Edit
+                                    </button>
+                                </td>
                         </tr>
                     ))}
                 </tbody>
@@ -86,7 +95,8 @@ const UsersList = ({
                 Next
             </button>
         </div>
+        
     </div>
-);
+)};
 
 export default UsersList;

@@ -1,42 +1,57 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/common/user/Navbar";
 import AuthNavbar from "./components/common/auth/AuthNavbar";
-
 import { useSelector } from "react-redux";
-import StudentRoutes from "./routes/StudentRoutes ";
-import InstructorRoutes from "./routes/InstructorRoutes ";
-import AdminRoutes from "./routes/AdminRoutes ";
 import { useAppDispatch } from "./hooks/hooks";
-import { useEffect } from "react";
+import {  useEffect, useState } from "react";
 import { RootState } from "./redux";
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
 import OtpPage from "./pages/auth/Otp";
 import { getUserData, logoutAction } from "./redux/store/actions/auth";
-import { RoleBasedRedirect } from "./routes/RoleBasedRedirect";
 import Home from "./pages/auth/Home";
 import RegistrationForm from "./pages/auth/Registrationform";
-import TeachUs from "./pages/auth/TeachUs";
 import ForgotPassword from "./pages/auth/forgotPassword";
+import { RoleBasedRedirect } from "./routes";
+import AuthCheck from "./routes/AuthCheck";
+import PublicRoutes from "./routes/PublicRoutes";
+import UserAuthCheck from "./routes/UserAuthCheck";
+import StudentRoutes from "./routes/StudentRoutes ";
+import InstructorRoutes from "./routes/InstructorRoutes ";
+import AdminAuthCheck from "./routes/AdminAuthCheck";
+import AdminRoutes from "./routes/AdminRoutes";
+import LoadingSpinner from "./components/common/loadingSpinner";
+import { MessageType } from "./types/IMessageType";
+import MessageToast from "./components/common/MessageToast";
 
 function App() {
   const location = useLocation();
   const isAuthenticated = [
     "/login",
     "/signup",
-    "/student/form",
-    "/instructor/form",
+    "/student-form",
+    "/instructor-form",
     "/forgot-password",
   ].some((path) => location.pathname.includes(path));
+  const isUser =["/home","/courses"].some((path) => location.pathname.includes(path));
+  const [loading,setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState<MessageType>("error");
 
   const { data } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
+  const handleMessage = async (Message: string): Promise<void> => {
+    setMessage(Message);
+  };
 
   useEffect(() => {
     if (!data) {
+      setLoading(true)
       dispatch(getUserData());
+      setLoading(false)
+      
     } else if (data.isBlocked) {
       dispatch(logoutAction());
+      setMessage("Edusprint team blocked your account! Please contact us")
+      setType("warning")
     }
   }, [dispatch, data]);
   const userRole = data?.role;
@@ -45,7 +60,7 @@ function App() {
 
   return (
     <div className="App dark:from-black dark:to-gray-800 bg-gradient-to-r h-full w-screen">
-      {!data?.isVerified ? isAuthenticated ? <AuthNavbar /> : <Navbar /> : null}
+      {!data?.isVerified ? isAuthenticated ? <AuthNavbar /> : <Navbar /> :isUser?<Navbar />: null}
       <Routes>
         {/* Role-based redirection */}
         <Route
@@ -61,25 +76,24 @@ function App() {
           }
         />
         <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/teach-us" element={<TeachUs />} />
+        <Route path="/instructor-form" element={<RegistrationForm />} />
+        <Route path="/*" element={<AuthCheck userData={data}><PublicRoutes/></AuthCheck>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/student-form" element={<RegistrationForm />} />
         <Route path="/otp-page" element={data?.isOtpVerified?<Navigate to="/home" replace />:<OtpPage />} />
-        <Route path="/student/form" element={<RegistrationForm />} />
-        <Route path="/instructor/form" element={<RegistrationForm />} />
-
-        {userRole === "student" && isOtpVerified && (
-          <Route path="/student/*" element={<StudentRoutes />} />
-        )}
-        {userRole === "instructor" && isOtpVerified && (
-          <Route path="/instructor/*" element={<InstructorRoutes />} />
-        )}
-       {userRole === "admin" &&(
-        <Route path="/admin/*" element={<AdminRoutes />} />
-       )}
+        <Route path="/student/*" element={<UserAuthCheck userData={data}><StudentRoutes/></UserAuthCheck>} />
+        <Route path="/instructor/*" element={<UserAuthCheck userData={data}><InstructorRoutes/></UserAuthCheck>} />
+        <Route path="/admin/*" element={<AdminAuthCheck userData={data}><AdminRoutes/></AdminAuthCheck>} />
 
       </Routes>
+      {loading&&<LoadingSpinner/>}
+      {message&&(
+        <MessageToast
+          message={message}
+          type={type}
+          onMessage={(Message) => handleMessage(Message)}
+        />
+      )}
     </div>
   );
 }

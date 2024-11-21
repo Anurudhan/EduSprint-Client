@@ -9,7 +9,7 @@ import {
   faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import facebook from "../../assets/facebook.png";
-import { Role, Response, SignupFormData } from "../../types/IForm";
+import { Role, Response} from "../../types/IForm";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { signupValidationSchema } from "../../utilities/validation/signuSchema";
@@ -17,15 +17,16 @@ import { useAppDispatch } from "../../hooks/hooks";
 import { signupAction } from "../../redux/store/actions/auth/signupAction";
 import { GoogleLogin,CredentialResponse } from "@react-oauth/google";
 import { googleAuthAction } from "../../redux/store/actions/auth/googleAuthAction";
-import { storeUserData } from "../../redux/store/slices/user";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Player } from "@lottiefiles/react-lottie-player";
+import LoadingSpinner from "../../components/common/loadingSpinner";
 
 
 
 const Signup: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
   const userTypeParam = searchParams.get("role");
   const userType = (Object.values(Role) as string[]).includes(userTypeParam || '')
     ? (userTypeParam as Role)
@@ -61,11 +62,13 @@ const Signup: React.FC = () => {
     validationSchema: signupValidationSchema,
     onSubmit: async (values) => {
       try {
+        setIsLoading(true)
         const data = values;
         const signupResult = await dispatch(signupAction({ ...data, "role": userType }));
         const payload = signupResult.payload as Response;
         
         if (!payload?.success) {
+          setIsLoading(false)
           if (payload?.message === "email") {
             formik.setErrors({ email: "Email is already taken" });
             toast.error("Email is already taken");
@@ -74,10 +77,15 @@ const Signup: React.FC = () => {
             toast.error("Username is already taken");
           }
         } else {
-          if (payload?.data?.email && payload?.data?.role) {
+         
+          if (payload?.data?.email && payload?.data?.role && payload?.data?.password &&
+             payload?.data?.userName ) {
             localStorage.setItem("userEmail", payload.data.email);
             localStorage.setItem("userRole", payload.data.role);
+            localStorage.setItem("userPassword",payload.data.password);
+            localStorage.setItem("userName",payload.data.userName);
           }
+          setIsLoading(false)
           localStorage.removeItem('otpStartTime');
           navigate("/otp-page",{replace:true});
         }
@@ -91,24 +99,15 @@ const Signup: React.FC = () => {
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     console.log("Google login successful, response: ", credentialResponse);
     try {
-      const response = await dispatch(googleAuthAction(credentialResponse));
-      if (response.payload.existingUser && response.payload.data.isGAuth) {
-        dispatch(storeUserData(response.payload.data));
-        navigate("/",{replace:true});
-        return;
+      const response = await dispatch(googleAuthAction({ credentials: credentialResponse, userType }));
+      console.log(response , "this is our response")
+      if (response.payload.success ) {
+        if(!response.payload.data?.isRequested){
+          navigate(`/${response.payload.data?.role}-form`,{replace:true});
+        }
+        navigate(`/${userType.toLowerCase()}`,{replace:true});
       } else if(!response.payload.success) {
         toast.error(response.payload.message);
-      }
-      else{
-        const allData: SignupFormData = {
-          role: userType,
-          email: response.payload.data.email,
-          password: response.payload.data.password,
-          userName: ""+ response.payload.data.email.split("@")[0].toLowerCase(),
-          isGAuth: true,
-        };
-  
-        navigate(`/${userType.toLowerCase()}/form`,{state:allData,replace:true});
       }
     } catch (error: unknown) {
       toast.error("Google login is failed")
@@ -128,6 +127,8 @@ const Signup: React.FC = () => {
   }
 
   return (
+    <>
+    {isLoading && <LoadingSpinner />}
     <div className="pt-16 flex h-screen justify-center items-center dark:bg-gradient-to-br dark:from-black dark:to-gray-800 bg-gradient-to-r from-white to-gray-200">
   <div className="hidden lg:flex flex-1 justify-center items-center pr-8">
     <Player
@@ -290,9 +291,12 @@ const Signup: React.FC = () => {
         </Link>
       </div>
     </div>
+    
   </div>
   <ToastContainer />
 </div>
+
+</>
 
   );
 };
