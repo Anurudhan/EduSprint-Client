@@ -1,12 +1,33 @@
-import { configureStore } from "@reduxjs/toolkit"
-import { userReducer } from "./store/slices/user"
+import { configureStore } from "@reduxjs/toolkit";
+import { userReducer } from "./store/slices/user";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // Default: localStorage for web
 
-export const store = configureStore ({
-    reducer: {
-        user: userReducer,
-    }
-})
+// Persist configuration
+const persistConfig = {
+  key: "root", // Key to access persisted state in storage
+  storage,
+};
 
-export type AppDispatch = typeof store.dispatch
+// Create a persisted reducer
+const persistedReducer = persistReducer(persistConfig, userReducer);
 
-export type RootState = ReturnType < typeof store.getState >
+export const store = configureStore({
+  reducer: {
+    user: persistedReducer, // Wrap user reducer with persisted reducer
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore specific actions or state paths where you need non-serializable data
+        ignoredActions: ["persist/PERSIST"], // Example: Ignore persist actions
+        ignoredPaths: ["user.register"], // Ignore paths with non-serializable data
+      },
+    }),
+});
+
+export const persistor = persistStore(store); // Create persistor
+
+// Export types
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;

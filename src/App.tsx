@@ -31,7 +31,7 @@ function App() {
     "/instructor-form",
     "/forgot-password",
   ].some((path) => location.pathname.includes(path));
-  const isUser =["/home","/courses"].some((path) => location.pathname.includes(path));
+  const isUser =["/home"].some((path) => location.pathname.includes(path));
   const [loading,setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [type, setType] = useState<MessageType>("error");
@@ -43,24 +43,27 @@ function App() {
   };
 
   useEffect(() => {
+    
     if (!data) {
       setLoading(true)
       dispatch(getUserData());
       setLoading(false)
-      
     } else if (data.isBlocked) {
-      dispatch(logoutAction());
-      setMessage("Edusprint team blocked your account! Please contact us")
-      setType("warning")
-    }
+        dispatch(logoutAction());
+        setMessage("Edusprint team blocked your account! Please contact us")
+        setType("warning")
+    } 
   }, [dispatch, data]);
-  const userRole = data?.role;
-  const isOtpVerified = data?.isOtpVerified;
-  console.log(userRole, isOtpVerified,"Otp is verified ----------------->");
+  // const userRole = data?.role;
+  // const isOtpVerified = data?.isOtpVerified;
+  // console.log(userRole, isOtpVerified,"Otp is verified ----------------->");
 
   return (
     <div className="App dark:from-black dark:to-gray-800 bg-gradient-to-r h-full w-screen">
       {!data?.isVerified ? isAuthenticated ? <AuthNavbar /> : <Navbar /> :isUser?<Navbar />: null}
+      {loading ? (
+      <LoadingSpinner />
+    ) : (
       <Routes>
         {/* Role-based redirection */}
         <Route
@@ -80,20 +83,19 @@ function App() {
         <Route path="/*" element={<AuthCheck userData={data}><PublicRoutes/></AuthCheck>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/student-form" element={<RegistrationForm />} />
-        <Route path="/otp-page" element={data?.isOtpVerified?<Navigate to="/home" replace />:<OtpPage />} />
+        <Route path="/otp-page" element={data?.isOtpVerified ? <Navigate to="/home" replace /> : <OtpPage />} />
         <Route path="/student/*" element={<UserAuthCheck userData={data}><StudentRoutes/></UserAuthCheck>} />
         <Route path="/instructor/*" element={<UserAuthCheck userData={data}><InstructorRoutes/></UserAuthCheck>} />
         <Route path="/admin/*" element={<AdminAuthCheck userData={data}><AdminRoutes/></AdminAuthCheck>} />
-
       </Routes>
-      {loading&&<LoadingSpinner/>}
-      {message&&(
-        <MessageToast
-          message={message}
-          type={type}
-          onMessage={(Message) => handleMessage(Message)}
-        />
-      )}
+    )}
+    {message && (
+      <MessageToast
+        message={message}
+        type={type}
+        onMessage={(Message) => handleMessage(Message)}
+      />
+    )}
     </div>
   );
 }

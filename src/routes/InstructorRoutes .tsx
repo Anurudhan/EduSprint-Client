@@ -5,6 +5,9 @@ import StudentProfile from "../pages/user/StudentProfile";
 import InstructorSidebar from "../components/Instructor/InstructorSidebar";
 import useDarkMode from "../hooks/userDarkMode";
 import InstructorDashboard from "../pages/Instructor/InstructorDashboard";
+import { Courses } from "../pages/Instructor/course/Courses";
+import CreateCourse from "../pages/Instructor/course/CreateCourse";
+import EditCourse from "../pages/Instructor/course/EditCourse";
 
 const InstructorRoutes = () => {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -18,6 +21,9 @@ const InstructorRoutes = () => {
             <Route path="/" element={<InstructorDashboard />} />
             <Route path="dashboard" element={<InstructorDashboard />} />
             <Route path="profile" element={<StudentProfile />}  />
+            <Route path="mycourses"  element={<Courses />} />
+            <Route path="create-course" element={<CreateCourse />} />
+            <Route path="edit-course" element={<EditCourse />} />
             {/* <Route path="mycourses"  element={<StudentCourses />} />
             <Route path="assessments" element={<StudentAssessments />} />
             <Route path="chat" element={<StudentChat />}  />

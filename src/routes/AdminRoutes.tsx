@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import LoadingSpinner from '../components/common/loadingSpinner';
 import useDarkMode from '../hooks/userDarkMode';
+import { AdminCategories } from '../pages/admin/AdminCategories';
 
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminCourses = lazy(() => import("../pages/admin/AdminCourses"));
@@ -28,6 +29,7 @@ function AdminRoutes() {
               <Route path="/" element={<AdminDashboard />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="courses" element={<AdminCourses />} />
+              <Route path="categories" element={<AdminCategories />} />
               <Route path="users/*" element={<ManageUsers />} />
               <Route path="assessments" element={<AdminAssessments />} />
               <Route path="transactions" element={<AdminTransactions />} />

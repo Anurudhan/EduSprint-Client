@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   LucideIcon,
+  Folders,
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux';
@@ -48,6 +49,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     { icon: BookOpen, label: 'Courses', path: '/admin/courses' },
     { icon: Users, label: 'Manage Users', path: '/admin/users' },
     { icon: ClipboardList, label: 'Assessments', path: '/admin/assessments' },
+    { path: '/admin/categories', icon: Folders, label: 'Categories' },
     { icon: Receipt, label: 'Transactions', path: '/admin/transactions' },
     { icon: Image, label: 'Banners', path: '/admin/banners' },
     { icon: UserPlus, label: 'Requests', path: '/admin/requests' },

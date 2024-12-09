@@ -3,8 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   BookOpen,
-  Users,
-  ClipboardList,
+  // Users,
+  // ClipboardList,
   Settings,
   LogOut,
   Sun,
@@ -13,14 +13,14 @@ import {
   X,
   type LucideIcon,
   MessageCircle,
-  TrendingUp,
-  Calendar,
-  FileText,
+  // TrendingUp,
+  // Calendar,
+  // FileText,
   DollarSign,
-  Award,
-  Video,
+  // Award,
+  // Video,
   Bell,
-  BookMarked,
+  // BookMarked,
   UserCog,
 } from 'lucide-react';
 import ConfirmationModal from '../common/ConfirmationModal';
@@ -60,43 +60,42 @@ const InstructorSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) 
     { 
       icon: BookOpen, 
       label: 'My Courses', 
-      path: '/instructor/courses',
-      badge: 12 // Demo: Number of active courses
+      path: '/instructor/mycourses'
     },
-    { 
-      icon: Video, 
-      label: 'Live Sessions', 
-      path: '/instructor/live-sessions',
-      badge: 2 // Demo: Upcoming sessions
-    },
-    { 
-      icon: Users, 
-      label: 'Students', 
-      path: '/instructor/students',
-      badge: 156 // Demo: Total enrolled students
-    },
-    { 
-      icon: ClipboardList, 
-      label: 'Assessments', 
-      path: '/instructor/assessments',
-      badge: 3 // Demo: Pending assessments
-    },
-    { 
-      icon: FileText, 
-      label: 'Course Materials', 
-      path: '/instructor/materials'
-    },
-    { 
-      icon: Calendar, 
-      label: 'Schedule', 
-      path: '/instructor/schedule',
-      badge: 4 // Demo: Today's events
-    },
-    { 
-      icon: TrendingUp, 
-      label: 'Analytics', 
-      path: '/instructor/analytics'
-    },
+    // { 
+    //   icon: Video, 
+    //   label: 'Live Sessions', 
+    //   path: '/instructor/live-sessions',
+    //   badge: 2 // Demo: Upcoming sessions
+    // },
+    // { 
+    //   icon: Users, 
+    //   label: 'Students', 
+    //   path: '/instructor/students',
+    //   badge: 156 // Demo: Total enrolled students
+    // },
+    // { 
+    //   icon: ClipboardList, 
+    //   label: 'Assessments', 
+    //   path: '/instructor/assessments',
+    //   badge: 3 // Demo: Pending assessments
+    // },
+    // { 
+    //   icon: FileText, 
+    //   label: 'Course Materials', 
+    //   path: '/instructor/materials'
+    // },
+    // { 
+    //   icon: Calendar, 
+    //   label: 'Schedule', 
+    //   path: '/instructor/schedule',
+    //   badge: 4 // Demo: Today's events
+    // },
+    // { 
+    //   icon: TrendingUp, 
+    //   label: 'Analytics', 
+    //   path: '/instructor/analytics'
+    // },
     { 
       icon: DollarSign, 
       label: 'Earnings', 
@@ -106,23 +105,23 @@ const InstructorSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) 
       icon: MessageCircle, 
       label: 'Messages', 
       path: '/instructor/messages',
-      badge: 8 // Demo: Unread messages
+      // badge: 8 
     },
-    { 
-      icon: Award, 
-      label: 'Certifications', 
-      path: '/instructor/certifications'
-    },
-    { 
-      icon: BookMarked, 
-      label: 'Resources', 
-      path: '/instructor/resources'
-    },
+    // { 
+    //   icon: Award, 
+    //   label: 'Certifications', 
+    //   path: '/instructor/certifications'
+    // },
+    // { 
+    //   icon: BookMarked, 
+    //   label: 'Resources', 
+    //   path: '/instructor/resources'
+    // },
     { 
       icon: Bell, 
       label: 'Notifications', 
       path: '/instructor/notifications',
-      badge: 5
+      // badge: 5
     },
     { 
       icon: UserCog, 

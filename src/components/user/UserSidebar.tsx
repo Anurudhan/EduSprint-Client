@@ -44,7 +44,7 @@ const UserSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     { icon: ClipboardList, label: 'Assessments', path: '/student/assessments' },
     { icon: MessageCircle, label: 'Chat Support', path: '/student/chat' },
     { icon: Settings, label: 'Settings', path: '/student/settings' },
-    { icon: UserCircle, label: 'profile', path: '/student/profile' },
+    { icon: UserCircle, label: 'Profile', path: '/student/profile' },
     // { icon: Calendar, label: 'Schedule', path: '/student/schedule' },
     // { icon: Trophy, label: 'Achievements', path: '/student/achievements' },
     // { icon: Rocket, label: 'Learning Path', path: '/student/learning-path' },
