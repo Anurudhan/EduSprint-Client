@@ -7,6 +7,9 @@ import StudentCourses from "../pages/user/StudentCourses";
 import StudentProfile from "../pages/user/StudentProfile";
 import StudentChat from "../pages/user/StudentChat";
 import StudentAssessments from "../pages/user/StudentAssesments";
+import UserCourse from "../pages/auth/UserCourse";
+import EnrollmentPage from "../pages/user/EnrollementPage";
+import { Invoice } from "../utilities/Invoice/Invoice";
 
 
 const StudentDashboard = lazy(() => import("../pages/user/StudentDashboard"));
@@ -26,8 +29,11 @@ function StudentRoutes() {
               <Route path="/" element={<StudentDashboard />} />
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="mycourses"  element={<StudentCourses />} />
+              <Route path="allcourse"  element={<UserCourse />} />
+              <Route path="enrollement"  element={<EnrollmentPage />} />
               <Route path="assessments" element={<StudentAssessments />} />
               <Route path="chat" element={<StudentChat />}  />
+              <Route path="invoice" element={<Invoice />}  />
               <Route path="profile" element={<StudentProfile />}  />
               <Route path="settings" element={<StudentSettings />} />
             </Routes>

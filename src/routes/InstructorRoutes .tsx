@@ -8,6 +8,7 @@ import InstructorDashboard from "../pages/Instructor/InstructorDashboard";
 import { Courses } from "../pages/Instructor/course/Courses";
 import CreateCourse from "../pages/Instructor/course/CreateCourse";
 import EditCourse from "../pages/Instructor/course/EditCourse";
+import CreateAssessment from "../pages/Instructor/assessment/CreateAssessment";
 
 const InstructorRoutes = () => {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -22,6 +23,8 @@ const InstructorRoutes = () => {
             <Route path="dashboard" element={<InstructorDashboard />} />
             <Route path="profile" element={<StudentProfile />}  />
             <Route path="mycourses"  element={<Courses />} />
+            <Route path="mycourse-details" element = {<CreateAssessment />} />
+            <Route path="assessment"  element={<Courses />} />
             <Route path="create-course" element={<CreateCourse />} />
             <Route path="edit-course" element={<EditCourse />} />
             {/* <Route path="mycourses"  element={<StudentCourses />} />

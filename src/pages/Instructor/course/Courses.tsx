@@ -133,7 +133,9 @@ export function Courses() {
                      className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
                       Edit
                     </button>
-                    <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <button 
+                    onClick={() => navigate("/instructor/mycourse-details", { state: { course } })}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
                       View
                     </button>
                   </div>

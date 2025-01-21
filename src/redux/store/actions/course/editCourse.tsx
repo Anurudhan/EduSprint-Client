@@ -5,7 +5,7 @@ import { CLIENT_API } from "../../../../utilities/axios/instance";
 import { config } from "../../../../common/config";
 
 export const editCourse = createAsyncThunk(
-    "course/edit",async(data:{data:CourseEntity,studentId:string|null},{rejectWithValue})=>{
+    "course/edit",async(data:{data:CourseEntity,studentId:string|null,incrementStudentsEnrolled?:boolean},{rejectWithValue})=>{
         try {
             const response = await CLIENT_API.post("/course/updatecourse",data,config);
             if(response.data.success){

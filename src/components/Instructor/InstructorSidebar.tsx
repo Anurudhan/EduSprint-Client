@@ -119,7 +119,7 @@ const InstructorSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) 
     // },
     { 
       icon: Bell, 
-      label: 'Notifications', 
+      label: 'notifications', 
       path: '/instructor/notifications',
       // badge: 5
     },

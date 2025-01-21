@@ -1,26 +1,39 @@
 
 import { DollarSign } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAppDispatch } from '../../hooks/hooks';
+import { getAllPayments } from '../../redux/store/actions/payment';
+import LoadingSpinner from '../../components/common/loadingSpinner';
+import { PaymentEntity } from '../../types/IPayment';
 
 const AdminTransactions = () => {
-  const transactions = [
-    {
-      id: 1,
-      student: 'John Doe',
-      course: 'Complete Web Development Bootcamp',
-      amount: 99.99,
-      date: '2024-03-20',
-      status: 'Completed'
-    },
-    {
-      id: 2,
-      student: 'Jane Smith',
-      course: 'Machine Learning A-Z',
-      amount: 89.99,
-      date: '2024-03-19',
-      status: 'Completed'
-    }
-  ];
+  const [transactions, setTransactions] = useState<PaymentEntity[]>([]);
+  const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    // Replace '/api/transactions' with your backend API endpoint
+    const fetchTransactions = async () => {
+      try {
+        const response = await dispatch(getAllPayments())
+        if (!response.payload.success) {
+          throw new Error('Failed to fetch transactions');
+        }
+        setTransactions(response.payload.data);
+      } catch (err:unknown) {
+        console.log(err)
+        
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [dispatch]);
+
+  if (loading) {
+    return <LoadingSpinner/>
+  }
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -38,13 +51,13 @@ const AdminTransactions = () => {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Transaction ID
+                Course title
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Student
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Course
+                  Instructor
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Amount
@@ -59,24 +72,24 @@ const AdminTransactions = () => {
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {transactions.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    #{transaction.id.toString().padStart(6, '0')}
+                <tr key={transaction._id}>
+                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {transaction?.course?.title}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {transaction.student}
+                    {transaction?.user?.userName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {transaction.course}
+                    {transaction?.course?.instructor?.userName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-1" />
-                      {transaction.amount}
+                      {transaction?.amount}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {transaction.date}
+                    {transaction.createdAt}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">

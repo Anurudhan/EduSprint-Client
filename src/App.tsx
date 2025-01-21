@@ -21,6 +21,9 @@ import AdminRoutes from "./routes/AdminRoutes";
 import LoadingSpinner from "./components/common/loadingSpinner";
 import { MessageType } from "./types/IMessageType";
 import MessageToast from "./components/common/MessageToast";
+import UserCourse from "./pages/auth/UserCourse";
+import { PaymentSuccess } from "./components/payment/PaymentSuccess";
+import { PaymentFailed } from "./components/payment/PaymentFailed";
 
 function App() {
   const location = useLocation();
@@ -31,7 +34,7 @@ function App() {
     "/instructor-form",
     "/forgot-password",
   ].some((path) => location.pathname.includes(path));
-  const isUser =["/home"].some((path) => location.pathname.includes(path));
+  const isUser =["/home","/course"].some((path) => location.pathname.includes(path));
   const [loading,setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [type, setType] = useState<MessageType>("error");
@@ -83,6 +86,9 @@ function App() {
         <Route path="/*" element={<AuthCheck userData={data}><PublicRoutes/></AuthCheck>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/student-form" element={<RegistrationForm />} />
+        <Route path="/payment-success" element={<PaymentSuccess/>} />
+        <Route path="/payment-failed" element={<PaymentFailed/>} />
+        <Route path="/courses" element={<UserCourse/>} />
         <Route path="/otp-page" element={data?.isOtpVerified ? <Navigate to="/home" replace /> : <OtpPage />} />
         <Route path="/student/*" element={<UserAuthCheck userData={data}><StudentRoutes/></UserAuthCheck>} />
         <Route path="/instructor/*" element={<UserAuthCheck userData={data}><InstructorRoutes/></UserAuthCheck>} />

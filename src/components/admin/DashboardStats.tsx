@@ -1,4 +1,8 @@
 import { Users, BookOpen, GraduationCap, DollarSign } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useAppDispatch } from '../../hooks/hooks';
+import { getAllInstructors } from '../../redux/store/actions/user';
+import { SignupFormData } from '../../types';
 
 interface StatCardProps {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // type for the icon component
@@ -26,11 +30,35 @@ const StatsCard = ({ icon: Icon, title, value, change }: StatCardProps) => (
 );
 
 const DashboardStats = () => {
+  const dispatch = useAppDispatch();
+  const [instructors,setInstructors] = useState([])
+ const fetchInstructors = useCallback(async () => {
+ 
+         try {
+             const resultAction = await dispatch(getAllInstructors({}));
+             console.log(resultAction.payload.data);
+ 
+             if (getAllInstructors.fulfilled.match(resultAction)) {
+                 const studentsData = resultAction.payload.data;
+                     const verifiedStudents = studentsData.filter(
+                         (data: SignupFormData) => data.isVerified
+                     );
+                     setInstructors(verifiedStudents);
+             } else {
+                 throw new Error("Failed to fetch students");
+             }
+         } catch (err) {
+             console.error("Error fetching students:", err);
+         } 
+     }, [dispatch]);
+     useEffect(() => {
+             fetchInstructors();
+         }, [fetchInstructors]);
   const stats = [
-    { icon: Users, title: 'Total Students', value: '2,847', change: 12.5 },
-    { icon: GraduationCap, title: 'Total Instructors', value: '184', change: 8.2 },
-    { icon: BookOpen, title: 'Active Courses', value: '342', change: 5.7 },
-    { icon: DollarSign, title: 'Revenue', value: '$28,459', change: -2.4 },
+    { icon: Users, title: 'Total Students', value: '', change: 0 },
+    { icon: GraduationCap, title: 'Total Instructors', value: instructors.length, change: 0 },
+    { icon: BookOpen, title: 'Active Courses', value: '', change: 0 },
+    { icon: DollarSign, title: 'Revenue', value: '', change: 0 },
   ];
 
   return (

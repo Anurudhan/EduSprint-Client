@@ -67,22 +67,25 @@ export function AdminCategories() {
     }
   };
 
-  const handleEditCategory =async(updatedCategory: Omit<Category, "id"> & { imageFile: File | null }) => {
+  const handleEditCategory = async (
+    updatedCategory: Omit<Category, "id"> & { imageFile: File | null }
+  ) => {
     if (!editingCategory) return;
     try {
-      console.log(updatedCategory.status,"this is status")
+      console.log(updatedCategory.status, "this is status");
       let imageUrl = updatedCategory.imageUrl || "";
-      if(updatedCategory.imageFile){
+      if (updatedCategory.imageFile) {
         imageUrl = await uploadToCloudinary(updatedCategory.imageFile);
       }
-      const response = await dispatch(editCategory({...updatedCategory,imageUrl:imageUrl}))
+      const response = await dispatch(
+        editCategory({ ...updatedCategory, imageUrl: imageUrl })
+      );
       if (response.payload.success) {
         await fetchCategories(page);
         setEditingCategory(null);
-      }     
-    }
-    catch(error:unknown){
-      console.log(error)
+      }
+    } catch (error: unknown) {
+      console.log(error);
     }
   };
 
@@ -116,9 +119,25 @@ export function AdminCategories() {
             key={category._id}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col"
           >
-            <span className={`  px-2 py-1 w-8 text-xs text-white ${category.status=="active"?"bg-green-600":"bg-red-500"}`}>
-                  {category.status}
-                </span>
+            {/* <div className="relative">
+              <span
+                className={`absolute top-2 left-2 px-3 py-1 text-xs font-semibold rounded-full shadow-md ${
+                  category.status === "active"
+                    ? "bg-green-500 text-white"
+                    : "bg-red-500 text-white"
+                }`}
+                title={
+                  category.status === "active"
+                    ? "This category is active"
+                    : "This category is inactive"
+                }
+              >
+                {category.status
+                  ? category.status.charAt(0).toUpperCase() +
+                    category.status.slice(1)
+                  : "Active"}
+              </span>
+            </div> */}
             <img
               src={String(category.imageUrl)}
               alt={category.name}

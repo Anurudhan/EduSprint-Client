@@ -3,12 +3,9 @@ import {
   Phone,
   MapPin,
   Calendar,
-  BookOpen,
-  Award,
-  Clock,
-  Star,
   Edit,
   Camera,
+  
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux";
@@ -34,6 +31,7 @@ import EditProfileModal from "../../components/user/EditProfileModal";
 import { uploadToCloudinary } from "../../utilities/axios/claudinary";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../components/common/loadingSpinner";
+import StudentPaymentHistory from "./studentPaymentHistory";
 interface StatCardProps {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // type for the icon component
   label: string;
@@ -176,28 +174,10 @@ const StudentProfile = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          <section className="card">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              About Me
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Passionate computer science student with a focus on web
-              development and artificial intelligence. Always eager to learn new
-              technologies and solve complex problems.
-            </p>
-          </section>
 
           <section className="card">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              Learning Statistics
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatCard icon={Clock} label="Study Hours" value="156" />
-              <StatCard icon={BookOpen} label="Courses Completed" value="12" />
-              <StatCard icon={Award} label="Certificates" value="8" />
-              <StatCard icon={Star} label="Average Rating" value="4.8" />
-            </div>
-          </section>
+            <StudentPaymentHistory/>
+            </section>
         </div>
 
         <div className="space-y-6">
@@ -313,21 +293,7 @@ const StudentProfile = () => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value }: StatCardProps) => {
-  return (
-    <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-      <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-        <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-        <p className="text-lg font-semibold text-gray-800 dark:text-white">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-};
+
 
 const InfoItem = ({ icon: Icon, label, value }: StatCardProps) => {
   return (

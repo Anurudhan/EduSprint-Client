@@ -1,6 +1,6 @@
 import DashboardStats from "../../components/admin/DashboardStats";
-import TopCourses from "../../components/admin/TopCourses";
-import TopInstructors from "../../components/admin/TopInstructors";
+// import TopCourses from "../../components/admin/TopCourses";
+// import TopInstructors from "../../components/admin/TopInstructors";
 
 
 const AdminDashboard = () => {
@@ -10,8 +10,8 @@ const AdminDashboard = () => {
       <h2 className="text-2xl  dark:text-white">Overview</h2>
       <DashboardStats />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TopCourses />
-        <TopInstructors />
+        {/* <TopCourses /> */}
+        {/* <TopInstructors /> */}
       </div>
     </div>
   );
