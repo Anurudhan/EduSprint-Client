@@ -9,6 +9,8 @@ import { Courses } from "../pages/Instructor/course/Courses";
 import CreateCourse from "../pages/Instructor/course/CreateCourse";
 import EditCourse from "../pages/Instructor/course/EditCourse";
 import CreateAssessment from "../pages/Instructor/assessment/CreateAssessment";
+import InstructorTransaction from "../pages/Instructor/InstuctorTransaction";
+import UserChat from "../components/chat/UserChat";
 
 const InstructorRoutes = () => {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -26,7 +28,9 @@ const InstructorRoutes = () => {
             <Route path="mycourse-details" element = {<CreateAssessment />} />
             <Route path="assessment"  element={<Courses />} />
             <Route path="create-course" element={<CreateCourse />} />
+            <Route path="messages" element={<UserChat />} />
             <Route path="edit-course" element={<EditCourse />} />
+            <Route path="earnings" element={<InstructorTransaction />} />
             {/* <Route path="mycourses"  element={<StudentCourses />} />
             <Route path="assessments" element={<StudentAssessments />} />
             <Route path="chat" element={<StudentChat />}  />

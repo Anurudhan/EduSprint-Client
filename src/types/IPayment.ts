@@ -10,4 +10,5 @@ export interface PaymentEntity {
     status?: string;
     course?:CourseEntity;
     user?:SignupFormData;
+    type?: "credit" | "debit";
 };

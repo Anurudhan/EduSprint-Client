@@ -5,6 +5,8 @@ import {
   Lesson
 } from "../../../types/ICourse";
 import { useLocation } from "react-router-dom";
+import { commonRequest, URL } from "../../../common/api";
+import { config } from "../../../common/config";
 
 function CreateAssessment() {
   // Sample course data - replace with your actual data fetching
@@ -13,11 +15,16 @@ function CreateAssessment() {
   const location = useLocation();
   const { course } = location.state || {}; // Ensure fallback for safety
 
-  const handleSubmit = (assessment: Assessment) => {
-    console.log("Assessment submitted:", assessment);
-    setShowAssessmentForm(false);
-    setSelectedLesson(null);
-    // Here you would typically save the assessment to your backend
+  const handleSubmit = async(assessment: Assessment) => {
+    try {
+      console.log("Assessment submitted:", assessment);
+      setShowAssessmentForm(false);
+      setSelectedLesson(null);
+      const response = await commonRequest("POST",`${URL}/course/assessment`, assessment,config);
+      console.log("thisi is our response", response)
+    } catch (error) {
+      console.log(error)    
+    }
   };
   if (!course.lessons) return null;
   return (

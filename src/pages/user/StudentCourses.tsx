@@ -192,3 +192,196 @@ const getTotalDuration = (lessons: Lesson[]): string => {
 };
 
 export default StudentCourses;
+
+
+// import { BookOpen, GraduationCap, Award } from 'lucide-react';
+
+
+// // Mock data for demonstration
+// const mockEnrollments: EnrollmentEntity[] = [
+//   {
+//     _id: '1',
+//     completionStatus: CompleationStatus.inProgress,
+//     progress: {
+//       completedLessons: ['1', '2'],
+//       completedAssessments: ['1'],
+//       overallCompletionPercentage: 60
+//     },
+//     course: {
+//       _id: '1',
+//       title: 'Advanced Web Development',
+//       description: 'Learn modern web development techniques and best practices',
+//       thumbnail: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8',
+//       level: 'advanced',
+//       instructorRef: 'John Doe',
+//       lessons: [
+//         {
+//           lessonNumber: '1',
+//           title: 'Introduction to Modern Web Development',
+//           description: 'Overview of current web development landscape and tools',
+//           video: 'https://example.com/lesson1.mp4',
+//           duration: '15 mins',
+//           objectives: ['Understand modern web development', 'Learn about essential tools']
+//         },
+//         {
+//           lessonNumber: '2',
+//           title: 'JavaScript Fundamentals',
+//           description: 'Core concepts of JavaScript programming',
+//           video: 'https://example.com/lesson2.mp4',
+//           duration: '20 mins',
+//           objectives: ['Master JavaScript basics', 'Understand modern ES6+ features']
+//         },
+//         {
+//           lessonNumber: '3',
+//           title: 'Advanced Concepts',
+//           description: 'Advanced web development patterns and practices',
+//           video: 'https://example.com/lesson3.mp4',
+//           duration: '25 mins',
+//           objectives: ['Learn advanced patterns', 'Master professional techniques']
+//         }
+//       ]
+//     }
+//   },
+//   {
+//     _id: '2',
+//     completionStatus: CompleationStatus.enrolled,
+//     progress: {
+//       completedLessons: [],
+//       completedAssessments: [],
+//       overallCompletionPercentage: 0
+//     },
+//     course: {
+//       _id: '2',
+//       title: 'UI/UX Design Fundamentals',
+//       description: 'Master the principles of user interface and experience design',
+//       thumbnail: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634',
+//       level: 'beginner',
+//       instructorRef: 'Jane Smith',
+//       lessons: [
+//         {
+//           lessonNumber: '1',
+//           title: 'Design Basics',
+//           description: 'Introduction to design principles',
+//           video: 'https://example.com/design1.mp4',
+//           duration: '15 mins',
+//           objectives: ['Understand design fundamentals', 'Learn color theory']
+//         },
+//         {
+//           lessonNumber: '2',
+//           title: 'Color Theory',
+//           description: 'Understanding color in design',
+//           video: 'https://example.com/design2.mp4',
+//           duration: '20 mins',
+//           objectives: ['Master color combinations', 'Apply color psychology']
+//         }
+//       ]
+//     }
+//   }
+// ];
+
+// function App() {
+//   const [selectedEnrollment, setSelectedEnrollment] = useState<EnrollmentEntity | null>(null);
+//   const [enrollments, setEnrollments] = useState(mockEnrollments);
+
+//   const handleLessonComplete = (enrollmentId: string, lessonNumber: string) => {
+//     setEnrollments(prev => prev.map(enrollment => {
+//       if (enrollment._id === enrollmentId) {
+//         const completedLessons = new Set([
+//           ...(enrollment.progress?.completedLessons || []),
+//           lessonNumber
+//         ]);
+        
+//         const totalLessons = enrollment.course?.lessons?.length || 0;
+//         const progress = {
+//           ...enrollment.progress,
+//           completedLessons: Array.from(completedLessons),
+//           overallCompletionPercentage: (completedLessons.size / totalLessons) * 100
+//         };
+
+//         return {
+//           ...enrollment,
+//           progress,
+//           completionStatus: progress.overallCompletionPercentage === 100
+//             ? CompleationStatus.Completed
+//             : CompleationStatus.inProgress
+//         };
+//       }
+//       return enrollment;
+//     }));
+//   };
+
+//   if (selectedEnrollment) {
+//     return (
+//       <CourseLearning
+//         enrollment={selectedEnrollment}
+//         onLessonComplete={(lessonNumber) => handleLessonComplete(selectedEnrollment._id!, lessonNumber)}
+//       />
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       {/* Header */}
+//       <header className="bg-white shadow">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+//           <h1 className="text-3xl font-bold text-gray-900">My Learning Dashboard</h1>
+//         </div>
+//       </header>
+
+//       {/* Main Content */}
+//       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//         {/* Stats Overview */}
+//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+//           <div className="bg-white p-6 rounded-lg shadow">
+//             <div className="flex items-center">
+//               <BookOpen className="w-8 h-8 text-blue-600" />
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-gray-600">Courses Enrolled</p>
+//                 <p className="text-2xl font-semibold text-gray-900">{enrollments.length}</p>
+//               </div>
+//             </div>
+//           </div>
+          
+//           <div className="bg-white p-6 rounded-lg shadow">
+//             <div className="flex items-center">
+//               <GraduationCap className="w-8 h-8 text-green-600" />
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-gray-600">In Progress</p>
+//                 <p className="text-2xl font-semibold text-gray-900">
+//                   {enrollments.filter(e => e.completionStatus === CompleationStatus.inProgress).length}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+          
+//           <div className="bg-white p-6 rounded-lg shadow">
+//             <div className="flex items-center">
+//               <Award className="w-8 h-8 text-yellow-600" />
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-gray-600">Completed</p>
+//                 <p className="text-2xl font-semibold text-gray-900">
+//                   {enrollments.filter(e => e.completionStatus === CompleationStatus.Completed).length}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Course Grid */}
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {enrollments.map((enrollment) => (
+//             <div
+//               key={enrollment._id}
+//               onClick={() => setSelectedEnrollment(enrollment)}
+//               className="cursor-pointer"
+//             >
+//               <CourseCard enrollment={enrollment} />
+//             </div>
+//           ))}
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+// export default App;

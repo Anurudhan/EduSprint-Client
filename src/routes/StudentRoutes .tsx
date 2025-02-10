@@ -5,11 +5,11 @@ import useDarkMode from '../hooks/userDarkMode';
 import UserSidebar from "../components/user/UserSidebar";
 import StudentCourses from "../pages/user/StudentCourses";
 import StudentProfile from "../pages/user/StudentProfile";
-import StudentChat from "../pages/user/StudentChat";
 import StudentAssessments from "../pages/user/StudentAssesments";
 import UserCourse from "../pages/auth/UserCourse";
 import EnrollmentPage from "../pages/user/EnrollementPage";
 import { Invoice } from "../utilities/Invoice/Invoice";
+import UserChat from "../components/chat/UserChat";
 
 
 const StudentDashboard = lazy(() => import("../pages/user/StudentDashboard"));
@@ -32,7 +32,7 @@ function StudentRoutes() {
               <Route path="allcourse"  element={<UserCourse />} />
               <Route path="enrollement"  element={<EnrollmentPage />} />
               <Route path="assessments" element={<StudentAssessments />} />
-              <Route path="chat" element={<StudentChat />}  />
+              <Route path="chat" element={<UserChat />}  />
               <Route path="invoice" element={<Invoice />}  />
               <Route path="profile" element={<StudentProfile />}  />
               <Route path="settings" element={<StudentSettings />} />

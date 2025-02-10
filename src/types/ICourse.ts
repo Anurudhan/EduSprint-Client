@@ -80,4 +80,5 @@ export interface CourseEntity {
     students?:string[];
     category?:Category;
     instructor?:SignupFormData;
+    createdAt?:Date;
 }

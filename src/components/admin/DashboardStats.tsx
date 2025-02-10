@@ -1,14 +1,21 @@
 import { Users, BookOpen, GraduationCap, DollarSign } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { useAppDispatch } from '../../hooks/hooks';
-import { getAllInstructors } from '../../redux/store/actions/user';
+import React from 'react';
+
 import { SignupFormData } from '../../types';
+import { CourseEntity } from '../../types/ICourse';
+import { useAppSelector } from '../../hooks/hooks';
+import { RootState } from '../../redux';
 
 interface StatCardProps {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // type for the icon component
   title: string;
   value: string | number; // value can be a string or number
   change: number; // trend is a string, but you can adjust the type if needed
+}
+interface DashboardProps{
+  students:SignupFormData[],
+  instructors:SignupFormData[],
+  courses:CourseEntity[]
 }
 
 const StatsCard = ({ icon: Icon, title, value, change }: StatCardProps) => (
@@ -28,39 +35,62 @@ const StatsCard = ({ icon: Icon, title, value, change }: StatCardProps) => (
     </div>
   </div>
 );
+const calculatePercentageChange = (
+  data: { date: string | Date }[], // Array of objects with a date field
+  currentDate: Date
+): number => {
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
 
-const DashboardStats = () => {
-  const dispatch = useAppDispatch();
-  const [instructors,setInstructors] = useState([])
- const fetchInstructors = useCallback(async () => {
- 
-         try {
-             const resultAction = await dispatch(getAllInstructors({}));
-             console.log(resultAction.payload.data);
- 
-             if (getAllInstructors.fulfilled.match(resultAction)) {
-                 const studentsData = resultAction.payload.data;
-                     const verifiedStudents = studentsData.filter(
-                         (data: SignupFormData) => data.isVerified
-                     );
-                     setInstructors(verifiedStudents);
-             } else {
-                 throw new Error("Failed to fetch students");
-             }
-         } catch (err) {
-             console.error("Error fetching students:", err);
-         } 
-     }, [dispatch]);
-     useEffect(() => {
-             fetchInstructors();
-         }, [fetchInstructors]);
+  const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1; // Handle January
+  const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+  const currentMonthCount = data.filter(item => {
+    const date = new Date(item.date);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  }).length;
+
+  const previousMonthCount = data.filter(item => {
+    const date = new Date(item.date);
+    return date.getMonth() === previousMonth && date.getFullYear() === previousYear;
+  }).length;
+
+  if (previousMonthCount === 0) {
+    return currentMonthCount > 0 ? 100 : 0; // Assume 100% increase if no previous data
+  }
+
+  return Math.floor(((currentMonthCount - previousMonthCount) / previousMonthCount) * 100);
+};
+
+
+const DashboardStats:React.FC<DashboardProps> = ({students,instructors,courses}) => {
+  const {data} = useAppSelector((state:RootState) => state.user);
+  if(!data||!data?.profit) return null
+  const profit =parseInt(data?.profit)
+  const currentDate = new Date();
+  
+  const studentChange = calculatePercentageChange(
+    students.map(s => ({ date: s.lastLoginDate || new Date() })), // Extract relevant date
+    currentDate
+  );
+  
+  const instructorChange = calculatePercentageChange(
+    instructors.map(i => ({ date: i.lastLoginDate || new Date() })), // Extract relevant date
+    currentDate
+  );
+  
+  const courseChange = calculatePercentageChange(
+    courses.map(c => ({ date: c.createdAt || new Date() })), // Replace with the correct date field for courses
+    currentDate
+  );
   const stats = [
-    { icon: Users, title: 'Total Students', value: '', change: 0 },
-    { icon: GraduationCap, title: 'Total Instructors', value: instructors.length, change: 0 },
-    { icon: BookOpen, title: 'Active Courses', value: '', change: 0 },
-    { icon: DollarSign, title: 'Revenue', value: '', change: 0 },
+    { icon: Users, title: 'Total Students', value:students.length, change: studentChange },
+    { icon: GraduationCap, title: 'Total Instructors', value: instructors.length, change: instructorChange },
+    { icon: BookOpen, title: 'Active Courses', value: courses.length, change: courseChange },
+    { icon: DollarSign, title: 'Revenue', value:profit , change: 0 },
   ];
-
+ 
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat, index) => (
