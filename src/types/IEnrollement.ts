@@ -1,4 +1,5 @@
 import { CourseEntity } from "./ICourse";
+import { SignupFormData } from "./IForm";
 
 export enum CompleationStatus {
     enrolled = 'enrolled',
@@ -18,4 +19,5 @@ export interface EnrollmentEntity {
         overallCompletionPercentage?: number
     };
     course?:CourseEntity;
+    instructor?:SignupFormData;
 };

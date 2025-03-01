@@ -41,7 +41,7 @@ const UserSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
   const menuItems: NavItemProps[] = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
     { icon: BookOpen, label: 'My Courses', path: '/student/mycourses' },
-    { icon: ClipboardList, label: 'Assessments', path: '/student/assessments' },
+    { icon: ClipboardList, label: 'Courses', path: '/student/allcourse' },
     { icon: MessageCircle, label: 'Chat Support', path: '/student/chat' },
     { icon: Settings, label: 'Settings', path: '/student/settings' },
     { icon: UserCircle, label: 'Profile', path: '/student/profile' },

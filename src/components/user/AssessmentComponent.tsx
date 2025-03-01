@@ -26,7 +26,7 @@ export const AssessmentComponent: React.FC<AssessmentProps> = ({
 
   const calculateScore = () => {
     let correct = 0;
-    assessment.questions.forEach(question => {
+    assessment?.questions.forEach(question => {
       if (question.type === QuestionType.MULTIPLE_CHOICE) {
         const userAnswer = answers[question.id];
         const correctAnswer = question.choices?.find(c => c.isCorrect)?.id;

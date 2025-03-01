@@ -6,7 +6,7 @@ import { RootState } from "../redux";
 
 interface SocketContextType {
     socket: Socket | null;
-    onlineUsers: { userId: string; socketId: string }[];
+    onlineUsers: { userId: string; socketId?: string }[];
     setOnlineUsers: (users: { userId: string; socketId: string }[]) => void;
     currentRoom: string;
     setCurrentRoom: (room: string) => void;

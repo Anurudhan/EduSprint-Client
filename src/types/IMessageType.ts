@@ -1,4 +1,14 @@
+
+
 export type MessageType = 'error' | 'warning' | 'info' | 'success';
+
+export enum contentType{
+    text="text",
+    image="image",
+    video="video",
+    audio="audio",
+    application="application"
+}
 
 export interface MessageEntity {
     _id?: string ;
@@ -6,7 +16,7 @@ export interface MessageEntity {
     chatId:  string;
     senderId: string;
     content: string;
-    contentType: 'text' | 'image' | 'video' | 'audio' | 'application';
+    contentType: contentType;
     receiverSeen?: boolean;
     isDeleted?: boolean;
     createdAt?: Date | string;

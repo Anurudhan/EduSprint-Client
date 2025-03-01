@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { CheckCircle, Lock, PlayCircle } from 'lucide-react';
+import { CheckCircle, Lock, MessageSquare, PlayCircle } from 'lucide-react';
 import { Lesson } from '../../types/ICourse';
 
 interface LessonPlayerProps {
   lesson: Lesson;
+  lessonId:number;
   isCompleted: boolean;
   isLocked: boolean;
-  onComplete: () => void;
+  onComplete: (lessonNumber: string) => void;
+  onMessage:()=>void; // Accepts lessonNumber as a parameter
 }
+
 
 export const LessonPlayer: React.FC<LessonPlayerProps> = ({
   lesson,
   isCompleted,
   isLocked,
-  onComplete
+  onComplete,
+  onMessage
 }) => {
   const [videoEnded, setVideoEnded] = useState(false);
 
@@ -21,7 +25,7 @@ export const LessonPlayer: React.FC<LessonPlayerProps> = ({
     setVideoEnded(true);
     onComplete();
   };
-
+ 
   if (isLocked) {
     return (
       <div className="bg-gray-100 rounded-lg p-8 text-center">
@@ -65,6 +69,13 @@ export const LessonPlayer: React.FC<LessonPlayerProps> = ({
             </ul>
           </div>
         )}
+        <button
+              onClick={onMessage}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span className="hidden sm:inline">Message Instructor</span>
+        </button>
       </div>
     </div>
   );

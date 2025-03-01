@@ -6,10 +6,14 @@ const appInstance = axios.create({
     baseURL: URL,
     withCredentials: true
 });
-
+export interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data: T;
+  }
 // Response Interceptor: Automatically extracts `data` from response
 appInstance.interceptors.response.use(
-    (response) => response.data,
+    (response) => (response.data),
     (error: AxiosError) => {
         console.error("Request failed:", error.response?.data || error.message);
         return Promise.reject(error);
@@ -21,7 +25,7 @@ export const commonRequest = async <T, B = unknown>(
     route: string,
     body?: B,
     config: AxiosRequestConfig = {}
-): Promise<T> => {
+): Promise<ApiResponse<T>> => {
     const requestConfig: AxiosRequestConfig = {
         method,
         url: route,

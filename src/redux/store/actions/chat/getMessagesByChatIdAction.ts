@@ -10,7 +10,7 @@ export const getMessagesByChatIdAction = createAsyncThunk(
         try {
 
             const response = await CLIENT_API.get(
-                `/api/chat/message/${chatId}`,
+                `/chat/message/${chatId}`,
                 {
                     headers: { "Content-Type": "application/json" },
                     withCredentials: true,

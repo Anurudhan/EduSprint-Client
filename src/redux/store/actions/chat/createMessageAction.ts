@@ -11,7 +11,7 @@ export const createMessageAction = createAsyncThunk(
         try {
 
             const response = await CLIENT_API.post(
-                "/api/chat/message",
+                "/chat/message",
                 data,config
             );
 

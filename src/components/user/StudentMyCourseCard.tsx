@@ -15,6 +15,7 @@ interface CourseCardProps {
 
 export const CourseCard: React.FC<CourseCardProps> = ({ enrollment }) => {
   const { course, progress, completionStatus } = enrollment;
+  console.log(course,"this is the length of course")
   
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">

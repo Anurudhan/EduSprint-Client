@@ -59,6 +59,7 @@ export interface SignupFormData {
   roomId:string;
   lastLoginDate?: Date;
   loginStreak?: number;
+  isOnline?:boolean;
   weeklyLogins?: boolean[];
 }
 
