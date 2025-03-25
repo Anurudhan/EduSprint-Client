@@ -7,13 +7,13 @@ import useDarkMode from '../hooks/userDarkMode';
 import { AdminCategories } from '../pages/admin/AdminCategories';
 
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
-const AdminCourses = lazy(() => import("../pages/admin/AdminCourses"));
+// const AdminCourses = lazy(() => import("../pages/admin/AdminCourses"));
 const ManageUsers = lazy(() => import("../pages/admin/ManageUsers"));
-const AdminAssessments = lazy(() => import("../pages/admin/AdminAssessments"));
+// const AdminAssessments = lazy(() => import("../pages/admin/AdminAssessments"));
 const AdminTransactions = lazy(() => import("../pages/admin/AdminTransaction"));
 const AdminBanners = lazy(() => import("../pages/admin/AdminBanners"));
 const Requests = lazy(() => import("../pages/admin/Requestes"));
-const AdminComplaints = lazy(() => import("../pages/admin/AdminComplaints"));
+// const AdminComplaints = lazy(() => import("../pages/admin/AdminComplaints"));
 const AdminSettings = lazy(() => import("../pages/admin/AdminSettings"));
 
 function AdminRoutes() {
@@ -28,14 +28,14 @@ function AdminRoutes() {
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="courses" element={<AdminCourses />} />
+              {/* <Route path="courses" element={<AdminCourses />} /> */}
               <Route path="categories" element={<AdminCategories />} />
               <Route path="users/*" element={<ManageUsers />} />
-              <Route path="assessments" element={<AdminAssessments />} />
+              {/* <Route path="assessments" element={<AdminAssessments />} /> */}
               <Route path="transactions" element={<AdminTransactions />} />
               <Route path="banners" element={<AdminBanners />} />
               <Route path="requests" element={<Requests />} />
-              <Route path="complaints" element={<AdminComplaints />} />
+              {/* <Route path="complaints" element={<AdminComplaints />} /> */}
               <Route path="settings" element={<AdminSettings />} />
             </Routes>
           </Suspense>

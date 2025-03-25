@@ -5,13 +5,13 @@ export enum Role {
   Admin = "admin",
 }
 
-enum Gender {
+export enum Gender {
   Male = "male",
   Female = "female",
   Other = "other",
 }
 
-enum Profession {
+export enum Profession {
   Student = "student",
   Working = "working",
 }
@@ -59,6 +59,7 @@ export interface SignupFormData {
   roomId:string;
   lastLoginDate?: Date;
   loginStreak?: number;
+  lastSeen?: Date;
   isOnline?:boolean;
   weeklyLogins?: boolean[];
 }

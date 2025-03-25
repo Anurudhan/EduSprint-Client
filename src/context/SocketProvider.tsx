@@ -1,4 +1,3 @@
-
 import React, { createContext, useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { useAppSelector } from "../hooks/hooks";
@@ -38,8 +37,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     useEffect(() => {
         if ((data?.role === "student" || data?.role === "instructor") && SOCKET_BACKEND_URL) {
             const transports = IS_LOCAL_ENV
-                ? ['websocket', 'polling']  //  locally
-                : ['websocket'];            //  production
+                ? ['polling', 'websocket']  // locally
+                : ['websocket'];            // production
 
             const newSocket: Socket = io(SOCKET_BACKEND_URL, {
                 transports,
@@ -50,7 +49,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
             newSocket.on("connect", () => {
                 console.log("Socket connected at client");
+                // Send user ID to server immediately after connection
+                newSocket.emit("new-user", data._id);
+            });
 
+            // Listen for online users updates
+            newSocket.on("online-users", (users) => {
+                console.log("Online users updated:", users);
+                setOnlineUsers(users);
             });
 
             newSocket.on("disconnect", () => {
@@ -63,10 +69,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             return () => {
                 newSocket.disconnect();
                 console.log("socket disconnected frontend");
-                
             };
         }
     }, [data]);
+
+    // Watch for currentRoom changes and join the room when it changes
+    useEffect(() => {
+        if (socket && currentRoom) {
+            console.log("Joining room:", currentRoom);
+            socket.emit("join-room", currentRoom);
+        }
+    }, [socket, currentRoom]);
 
     return (
         <SocketContext.Provider value={contextValues}>

@@ -1,455 +1,296 @@
-import { useContext, useEffect, useState, useCallback} from 'react';
-import { toast } from 'react-toastify';
+import { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
+import { contentType, IMessage } from '../../types/IMessageType';
+import { IChat, SignupFormData } from '../../types';
 import ChatList from './ChatList';
 import ChatBox from './ChatBox';
-import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
+import { chatApi } from '../../API/chatApi';
+import { useAppSelector } from '../../hooks/hooks';
 import { RootState } from '../../redux';
-import { ChatEntity, ChatStatus, ChatType, IndividualChatEntity, SubscriptionType, UIChatEntity } from '../../types/IChat';
-import { contentType, MessageEntity } from '../../types/IMessageType';
-import { Role, SignupFormData } from '../../types';
+import LoadingSpinner from '../common/loadingSpinner';
 import { SocketContext } from '../../context/SocketProvider';
-import { 
-  createMessageAction, 
-  getMessagesByChatIdAction, 
-  updateUnreadCount 
-} from '../../redux/store/actions/chat';
-import { useLocation } from 'react-router-dom';
-import { commonRequest, URL } from '../../common/api';
-import { config } from '../../common/config';
-import { useChatProcessing } from '../../context/useChatProcessing';
 
-interface MessageSeenProps {
-  messageId: string;
-  userId: string;
-}
-
-function UserChat() {
-  const dispatch = useAppDispatch();
-  const { data: userData } = useAppSelector((state: RootState) => state.user);
+export const UserChat: React.FC = () => {
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [chats, setChats] = useState<IChat[] | null>(null);
+  const [users, setUsers] = useState<SignupFormData[]>([]);
+  // Keep track of messages we've sent locally
+  const [localMessageIds, setLocalMessageIds] = useState<Set<string>>(new Set());
+  
   const location = useLocation();
-  const { receiver } = (location.state) || {};
+  const currentUser = useAppSelector((state: RootState) => state.user.data);
   
-  // Use a ref to track if initial setup has been done
-  const { receiverProcessedRef } = useChatProcessing();
-
-  // State
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [currentChat, setCurrentChat] = useState<UIChatEntity | null>(null);
-  const [chats, setChats] = useState<ChatEntity[] | null>();
-  const [messages, setMessages] = useState<MessageEntity[]>([]);
-  const [roomId, setRoomId] = useState<string | null>(null);
-  const [chatListLoading, setChatListLoading] = useState(false);
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const [isCreatingChat, setIsCreatingChat] = useState(false);
-
-  const { socket, onlineUsers, setOnlineUsers } = useContext(SocketContext) || {};
+  const socketContext = useContext(SocketContext);
+  const socket = socketContext?.socket;
   
-  // Memoize this function to prevent recreating it on each render
-  const createPrivateRoomId = useCallback((id1: string, id2: string) => 
-    id1 > id2 ? `${id1}_${id2}` : `${id2}_${id1}`,
-  []);
-
-  // Handle window resize
   useEffect(() => {
-    const handleResize = () => setIsMobileView(window.innerWidth < 768);
+    if (socketContext && selectedChatId) {
+      socketContext.setCurrentRoom(selectedChatId);
+    }
+  }, [socketContext, selectedChatId]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleNewReceiver = useCallback(async () => {
-    // Only process the receiver once and if we have necessary data
-    if (!receiver || !userData?._id || isCreatingChat || receiverProcessedRef.current) return;
-    
-    receiverProcessedRef.current = true; // Mark as processed to avoid duplicate processing
-    
-    try {
-      setIsCreatingChat(true);
-      setChatListLoading(true);
-  
-     
-
-      
-        // Create new chat if doesn't exist
-        const newChat: IndividualChatEntity = {
-          type: ChatType.individual,
-          status: ChatStatus.active,
-          participants: [userData._id, receiver._id], 
-          lastSeen: new Date().toISOString(),
-          unreadCounts: 0,
-          subscriptionType: SubscriptionType.basic, 
-          createdAt: new Date().toISOString()
-        };
-        
-        const savedChat = await commonRequest<IndividualChatEntity>(
-          "POST",
-          `${URL}/chat`,
-          newChat,
-          config
-        );
-  
-      
-      // Create room ID first so it can be used in the UI chat object
-      const newRoomId = createPrivateRoomId(userData._id, receiver._id);
-      setRoomId(newRoomId);
-      socket?.emit("join-room", { roomId: newRoomId });
-      
-      // Create a properly typed UI chat entity
-      const uiChat: UIChatEntity = {
-        ...savedChat.data,
-        chatId: savedChat.data._id as string,
-        name: receiver.userName,
-        receiverId: receiver._id,
-        isOnline: onlineUsers?.some(user => user.userId === receiver._id) ? true : false,
-        roomId: newRoomId,
-        // Add the missing properties
-        avatar: receiver.profile.avatar || '', // Using receiver's avatar or empty string as fallback
-        role: receiver.role || 'user' // Using receiver's role or 'user' as fallback
-      };
-      
-      // Set current chat (only once)
-      setCurrentChat(uiChat);
-      
-      // Add the new chat to the list if not already there
-      setChats(prevChats => {
-        if (!prevChats) return [uiChat] as unknown as ChatEntity[];
-        
-        // Check if chat already exists in the list
-        const chatExists = prevChats.some(chat => 
-          'chatId' in chat && chat.chatId === uiChat.chatId
-        );
-        
-        if (chatExists) return prevChats;
-        return [...prevChats, uiChat] as unknown as ChatEntity[];
-      });
-  
-      // Automatically select the new chat
-      setSelectedUserId(receiver._id);
-  
-      // Initialize message list for new chat
-      dispatch(getMessagesByChatIdAction(uiChat.chatId))
-        .then((response) => {
-          if (response.payload && response.payload.data) {
-            setMessages(response.payload.data);
-          }
-        });
-  
-    } catch (error) {
-      console.error("Error creating new chat:", error);
-      toast.error("Failed to create new chat");
-    } finally {
-      setChatListLoading(false);
-      setIsCreatingChat(false);
-    }
-  }, [receiver, userData, socket, onlineUsers, isCreatingChat, createPrivateRoomId, dispatch,receiverProcessedRef]);
-
-  // Fetch initial chats - only run once on component mount
-  const fetchChatsByUserId = useCallback(async () => {
-    if (!userData?._id ) return;
-  
-    setChatListLoading(true);
-    
-    try {
-      const response = await commonRequest<IndividualChatEntity[]>(
-        "GET",
-        `${URL}/chat/user?userId=${userData._id}`, 
-        "",
-        config
-      );
-      
-      const chatDataMap = new Map();
-      const unreadCountsMap: Record<string, number> = {};
-
-      response.data.forEach((chat: IndividualChatEntity) => {
-        const participant = chat?.participants.find(
-          (participantId: SignupFormData | string) => {
-            if (typeof participantId !== "string") return participantId._id !== userData._id
-            return false
-          }
-        );
-        
-        if (participant && typeof participant !== "string" && !chatDataMap.has(participant._id) && chat._id) {
-          chatDataMap.set(participant?._id, {
-            ...participant,
-            name: participant.userName,
-            chatId: chat._id,
-            receiverId: participant._id,
-            createdAt: chat.createdAt || Date.now(),
-            lastSeen: chat?.lastSeen,
-            unreadCounts: chat.unreadCounts,
-            subscriptionType: chat.subscriptionType,
-            avatar: participant?.profile?.avatar || '', 
-            role: participant.role || 'user'
-          });
-          unreadCountsMap[chat?._id] = chat.unreadCounts || 0;
-        }
-      });
-
-      setChats(Array.from(chatDataMap.values()));
-      setUnreadCounts(unreadCountsMap);
-    } finally {
-      setChatListLoading(false);
-    }
-  }, [userData?._id]);
-
-  // Socket event handlers
-  const handleReceiveMessage = useCallback((message: MessageEntity) => {
-    setMessages(prevMessages => [...prevMessages, message]);
-    
-    if (message.senderId !== userData?._id) {
-      const newCount = (unreadCounts[message.chatId] || 0) + 1;
-    
-      setUnreadCounts(prevCount => ({
-        ...prevCount,
-        [message.chatId]: newCount,
-      }));
-      
-      dispatch(updateUnreadCount({
-        _id: message.chatId,
-        unreadCount: newCount,
-      }));
-    }
-    
-    setChats(prevChats => {
-      if (!prevChats) return []; // Handle null case
-      
-      const updatedChats = prevChats.map(chat =>
-        chat._id === message.chatId ? { ...chat, lastMessage: message } : chat
-      );
-    
-      return updatedChats.sort((a, b) => {
-        const aDate = new Date(a.lastMessage?.createdAt || a.createdAt || 0);
-        const bDate = new Date(b.lastMessage?.createdAt || b.createdAt || 0);
-        return bDate.getTime() - aDate.getTime();
-      });
-    });
-  }, [userData?._id, dispatch, unreadCounts]);
-
-  const handleMessageSeen = useCallback(({ messageId, userId }: MessageSeenProps) => {
-    if (userId !== userData?._id) {
-      setMessages(prevMessages =>
-        prevMessages.map(msg =>
-          msg._id === messageId ? { ...msg, receiverSeen: true } : msg
-        )
-      );
-    }
-
-    if (currentChat?.chatId) {
-      setUnreadCounts(prevCounts => ({
-        ...prevCounts,
-        [currentChat.chatId]: 0,
-      }));
-    }
-  }, [userData?._id, currentChat?.chatId]);
-
-  // Function to properly create a UIChatEntity from a raw chat object
-  const createUIChatEntity = useCallback((chat: ChatEntity, userId: string, isOnline: boolean, roomId: string): UIChatEntity => {
-    const receiver = chat.participants.find(participant => {
-      if (typeof participant !== "string") return participant._id !== userData?._id
-    });
-    
-    if (typeof receiver !== "string")
-      return {
-        chatId: chat._id || "",
-        name: receiver?.userName || "unknown",
-        receiverId: receiver?._id || userId,
-        isOnline,
-        roomId,
-        type: chat.type || ChatType.individual,
-        status: chat.status || ChatStatus.active,
-        lastSeen: chat.lastSeen,
-        lastMessage: chat.lastMessage,
-        unreadCounts: chat.unreadCounts || 0,
-        subscriptionType: chat.subscriptionType || SubscriptionType.basic,
-        createdAt: chat.createdAt,
-        updatedAt: chat.updatedAt,
-        participants: chat.participants || [],
-        avatar: receiver?.profile?.avatar || '', 
-        role: receiver?.role || Role.Student
-      };
-    else 
-      return {
-        chatId: chat._id || "",
-        name: "unknown",
-        receiverId: userId,
-        isOnline,
-        roomId,
-        type: chat.type || ChatType.individual,
-        status: chat.status || ChatStatus.active,
-        lastSeen: chat.lastSeen,
-        lastMessage: chat.lastMessage,
-        unreadCounts: chat.unreadCounts || 0,
-        subscriptionType: chat.subscriptionType || SubscriptionType.basic,
-        createdAt: chat.createdAt,
-        updatedAt: chat.updatedAt,
-        participants: chat.participants || [],
-        avatar: '', 
-        role: Role.Student
-      };
-  }, [userData?._id]);
-
-  // Initialize chats and set up socket connection once on component mount
   useEffect(() => {
-    // Only fetch chats if we have a user ID and haven't done it already
-    if (userData?._id ) {
-      fetchChatsByUserId();
-    }
-    
-    // Process receiver data if present
-    if (receiver && userData?._id && !receiverProcessedRef.current) {
-      handleNewReceiver();
-    }
-  }, [fetchChatsByUserId, handleNewReceiver, receiver, userData?._id,receiverProcessedRef]);
-
-  // Set up socket listeners once
-  useEffect(() => {
-    if (!socket || !setOnlineUsers) return;
-  
-    socket.on("online-users", (users: { userId: string; socketId: string }[]) => {
-      setOnlineUsers(users);
-    });
-  
-    socket.on("receive-message", handleReceiveMessage);
-  
-    socket.on("get-delete-message", (messageId: string) => {
-      setMessages(prevMessages =>
-        prevMessages.map(msg =>
-          msg._id === messageId ? { ...msg, isDeleted: true } : msg
-        )
-      );
-    });
-  
-    socket.on("message-seen-update", handleMessageSeen);
-  
-    if (userData?._id) {
-      socket.emit("new-user", { userId: userData._id, socketId: socket.id });
-    }
-  
-    return () => {
-      socket.off("new-user");
-      socket.off("online-users");
-      socket.off("receive-message");
-      socket.off("get-delete-message");
-      socket.off("message-seen-update");
-    };
-  }, [socket, setOnlineUsers, handleReceiveMessage, handleMessageSeen, userData?._id]);
-
-  // Mark messages as seen when viewing a chat
-  useEffect(() => {
-    if (currentChat && messages.length > 0 && socket && userData?._id) {
-      const unseenMessages = messages.filter(
-        msg => !msg.receiverSeen && msg.senderId !== userData._id
-      );
-
-      if (unseenMessages.length > 0) {
-        socket.emit("message-seen", {
-          roomId,
-          chatId: currentChat.chatId,
-          userId: userData._id,
-        });
-
-        setUnreadCounts(prevCounts => ({
-          ...prevCounts,
-          [currentChat.chatId]: 0,
+    const fetchData = async () => {
+      if (!currentUser?._id) return;
+      try {
+        setLoading(true);
+        const fetchedChats = await chatApi.fetchChats(currentUser._id);
+        
+        const normalizedChats = (fetchedChats || []).map(chat => ({
+          ...chat,
+          createdAt: new Date(chat.createdAt),
+          updatedAt: new Date(chat.updatedAt),
+          lastMessage: chat.lastMessage 
+            ? { 
+                ...chat.lastMessage, 
+                timestamp: chat.lastMessage.timestamp ? new Date(chat.lastMessage.timestamp) : new Date(chat.updatedAt) 
+              }
+            : null,
         }));
-
-        dispatch(updateUnreadCount({
-          _id: currentChat.chatId as string,
-          unreadCount: 0,
-        }));
+        
+        setChats(normalizedChats);
+        
+        const participantIds = normalizedChats
+          .flatMap(chat => chat.participants)
+          .filter(id => id !== currentUser._id);
+        const Ids = participantIds.join(',');
+        const usersResponse = await chatApi.fetchUsers(Ids);
+        setUsers(usersResponse || []);
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+        setChats([]);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [messages, currentChat, socket, userData?._id, dispatch, roomId]);
+    };
+    fetchData();
+  }, [currentUser?._id]);
 
-  const handleSendMessage = async (message: { content: string, contentType: contentType }) => {
-    if (!roomId || !currentChat || !userData?._id) return;
+  // Handle WebSocket events
+  useEffect(() => {
+    if (!socket || !selectedChatId) return;
 
-    const newMessage: MessageEntity = {
-      roomId,
-      chatId: currentChat.chatId,
-      senderId: userData._id,
-      content: message.content,
-      contentType: message.contentType,
+    const messageHandler = (message: IMessage) => {
+      console.log("Received message via socket:", message);
+      
+      // Check if this is a message we sent ourselves
+      if (message.sender === currentUser?._id) {
+        // Check if we already have this message in our local state
+        setChatMessages(prev => {
+          // Look for a message with matching content and sender
+          const existingMessageIndex = prev.findIndex(msg => 
+            msg.content === message.content && 
+            msg.sender === message.sender &&
+            msg.contentType === message.contentType &&
+            Math.abs(new Date(msg.createdAt).getTime() - new Date(message.createdAt).getTime()) < 10000
+          );
+
+          if (existingMessageIndex !== -1) {
+            // Update the existing message with server data (e.g., to get the real ID)
+            const updatedMessages = [...prev];
+            updatedMessages[existingMessageIndex] = {
+              ...message,
+              createdAt: new Date(message.createdAt),
+              updatedAt: new Date(message.updatedAt)
+            };
+            return updatedMessages;
+          } else {
+            // If this is not a duplicate message, add it to the chat
+            return [...prev, {
+              ...message,
+              createdAt: new Date(message.createdAt),
+              updatedAt: new Date(message.updatedAt)
+            }];
+          }
+        });
+      } else {
+        // Messages from others should always be added (they won't be duplicates)
+        setChatMessages(prev => [...prev, {
+          ...message,
+          createdAt: new Date(message.createdAt),
+          updatedAt: new Date(message.updatedAt)
+        }]);
+      }
     };
 
-    socket?.emit("send-message", newMessage);
-    await dispatch(createMessageAction(newMessage));
+    socket.on("receive-message", messageHandler);
+
+    return () => {
+      socket.off("receive-message", messageHandler);
+    };
+  }, [socket, selectedChatId, currentUser?._id]);
+
+  useEffect(() => {
+    const receiver = location.state?.receiver;
+    if (receiver && currentUser?._id) {
+      const createAndSelectChat = async () => {
+        try {
+          const existingChat = chats?.find(chat =>
+            chat.chatType === 'individual' &&
+            chat.participants.includes(currentUser._id!) &&
+            chat.participants.includes(receiver._id!)
+          );
+
+          if (existingChat?._id) {
+            setSelectedChatId(existingChat._id);
+          } else {
+            const newChat = await chatApi.createChat([currentUser._id as string, receiver._id!]);
+            setChats(prev => (prev ? [...prev, newChat] : [newChat]));
+            if (newChat._id) {
+              setSelectedChatId(newChat._id);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to create chat:', error);
+        }
+      };
+      createAndSelectChat();
+    }
+  }, [location.state, currentUser?._id, chats]);
+
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (selectedChatId) {
+        try {
+          const fetchedMessages = await chatApi.fetchMessages(selectedChatId);
+          // Reset local message IDs when changing chats
+          setLocalMessageIds(new Set());
+          // Normalize dates for consistency
+          const messagesWithDates = (fetchedMessages || []).map(msg => ({
+            ...msg,
+            createdAt: new Date(msg.createdAt),
+            updatedAt: new Date(msg.updatedAt)
+          }));
+          setChatMessages(messagesWithDates);
+        } catch (error) {
+          console.error('Failed to fetch messages:', error);
+          setChatMessages([]);
+        }
+      } else {
+        setChatMessages([]);
+      }
+    };
+    loadMessages();
+  }, [selectedChatId]);
+
+  const handleSendMessage = async (content: string, contentTypeValue: contentType, replyToId?: string, fileUrl?: string) => {
+    if (!selectedChatId || !currentUser?._id || !socket) return;
+    
+    // Generate a unique client-side ID
+    const clientId = `local-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
+    // Create a new message object
+    const newMessage: IMessage = {
+      _id: clientId,
+      chatId: selectedChatId,
+      sender: currentUser._id,
+      content,
+      contentType: contentTypeValue,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isEdited: false,
+      isDeleted: false,
+      readBy: [{ userId: currentUser._id, readAt: new Date() }],
+      reactions: [],
+      replyTo: replyToId,
+      fileUrl,
+    };
+
+    // Track that we've added this message locally
+    setLocalMessageIds(prev => {
+      const updated = new Set(prev);
+      updated.add(clientId);
+      return updated;
+    });
+
+    // Update UI immediately
+    setChatMessages(prev => [...prev, newMessage]);
+
+    try {
+      // Emit to socket
+      socket.emit("send-message", {
+        ...newMessage,
+        roomId: selectedChatId
+      });
+
+      // Also save to database directly
+      await chatApi.sendMessage({
+        ...newMessage,
+        _id: undefined // Let the server assign the real ID
+      });
+      
+      // The socket will handle updating this message with server data
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // Remove the failed message from the UI
+      setChatMessages(prev => prev.filter(msg => msg._id !== clientId));
+      
+      // Remove from tracked local messages
+      setLocalMessageIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(clientId);
+        return updated;
+      });
+    }
   };
 
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChatId(chatId);
+  };
+
+  const handleBackToChatList = () => {
+    setSelectedChatId(null);
+  };
+
+  const selectedChat: IChat | null = selectedChatId
+    ? (chats?.find(chat => chat._id === selectedChatId) || null)
+    : null;
+
+  if (loading) return <LoadingSpinner />;
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto h-screen">
-        <div className={`h-full ${isMobileView ? 'relative' : 'grid md:grid-cols-3 lg:grid-cols-4 gap-4 p-4'}`}>
-          <div className={`md:col-span-1 h-full ${isMobileView && selectedUserId ? 'hidden' : 'block'}`}>
-            <ChatList
-              users={chats || []}
-              userId={userData?._id || ""}
-              selectedUserId={selectedUserId}
-              onSelectUser={(userId) => {
-                setSelectedUserId(userId);
-                // Find the selected chat
-                if (userId && chats) {
-                  const selectedChat = chats.find(chat => {
-                    if ('receiverId' in chat) {
-                      return chat.receiverId === userId;
-                    }
-                    // For compatibility with ChatEntity type
-                    const participant = chat.participants.find(p => {
-                      if (typeof p !== "string") return p._id === userId
-                    });
-                    return !!participant;
-                  });
-                  
-                  if (selectedChat) {
-                    // Create room ID
-                    const newRoomId = createPrivateRoomId(userData?._id || '', userId);
-                    setRoomId(newRoomId);
-                    
-                    // Join room
-                    socket?.emit("join-room", { roomId: newRoomId });
-                    
-                    // Create a properly typed UIChatEntity
-                    const uiChat = createUIChatEntity(
-                      selectedChat, 
-                      userId, 
-                      onlineUsers?.some(user => user.userId === userId) || false,
-                      newRoomId
-                    );
-                    
-                    // Set current chat
-                    setCurrentChat(uiChat);
-                    
-                    // Get messages only if we haven't already loaded them
-                    if (currentChat?.chatId !== uiChat.chatId) {
-                      dispatch(getMessagesByChatIdAction(uiChat.chatId))
-                        .then((response) => {
-                          if (response.payload && response.payload.data) {
-                            setMessages(response.payload.data);
-                          }
-                        });
-                    }
-                  }
-                }
-              }}
-              loading={chatListLoading}
-              unreadCounts={unreadCounts}
-            />
-          </div>
-          <div className={`md:col-span-2 lg:col-span-3 h-full ${
-            isMobileView && !selectedUserId ? 'hidden' : 'block'
-          } ${isMobileView ? 'absolute top-0 left-0 w-full h-full z-10' : ''}`}>
-            <ChatBox
-              currentChat={currentChat}
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              onBack={isMobileView ? () => setSelectedUserId(null) : undefined}
-              isOnline={onlineUsers?.some(user => user.userId === currentChat?.receiverId) || false}
-            />
-          </div>
+    <div className="h-screen flex flex-col bg-gray-100">
+      <div className="flex-grow flex overflow-hidden">
+        <div
+          className={`w-full md:w-80 lg:w-96 flex-shrink-0 ${
+            isMobile && selectedChatId ? 'hidden' : 'block'
+          }`}
+        >
+          <ChatList
+            chats={chats || []}
+            users={users}
+            currentUser={currentUser}
+            selectedChatId={selectedChatId}
+            onSelectChat={handleSelectChat}
+            onlineUsers={socketContext?.onlineUsers || []}
+          />
+        </div>
+        <div
+          className={`flex-grow ${
+            isMobile && !selectedChatId ? 'hidden' : 'block'
+          }`}
+        >
+          <ChatBox
+            chat={selectedChat}
+            messages={chatMessages}
+            users={users}
+            currentUser={currentUser}
+            onSendMessage={handleSendMessage}
+            onBack={isMobile ? handleBackToChatList : undefined}
+          />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default UserChat;

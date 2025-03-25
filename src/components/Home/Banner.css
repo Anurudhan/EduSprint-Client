@@ -1,0 +1,14 @@
+.custom-dots {
+    bottom: 20px;
+    padding: 0 20px;
+  }
+  
+  .custom-dots li {
+    margin: 0 8px;
+  }
+  
+  .custom-dots li.slick-active div {
+    background: white;
+    transform: scale(1.3);
+    opacity: 1;
+  }

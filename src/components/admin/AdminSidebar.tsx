@@ -3,13 +3,10 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import LogoCondent from "../../assets/Screenshot 2024-09-30 112131_processed.png";
 import {
   LayoutDashboard,
-  BookOpen,
   Users,
-  ClipboardList,
   Receipt,
   Image,
   UserPlus,
-  AlertCircle,
   Settings,
   LogOut,
   Sun,
@@ -46,14 +43,14 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
 
   const menuItems: NavItemProps[] = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: BookOpen, label: 'Courses', path: '/admin/courses' },
+    // { icon: BookOpen, label: 'Courses', path: '/admin/courses' },
     { icon: Users, label: 'Manage Users', path: '/admin/users' },
-    { icon: ClipboardList, label: 'Assessments', path: '/admin/assessments' },
+    // { icon: ClipboardList, label: 'Assessments', path: '/admin/assessments' },
     { path: '/admin/categories', icon: Folders, label: 'Categories' },
     { icon: Receipt, label: 'Transactions', path: '/admin/transactions' },
     { icon: Image, label: 'Banners', path: '/admin/banners' },
     { icon: UserPlus, label: 'Requests', path: '/admin/requests' },
-    { icon: AlertCircle, label: 'Complaints', path: '/admin/complaints' },
+    // { icon: AlertCircle, label: 'Complaints', path: '/admin/complaints' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 

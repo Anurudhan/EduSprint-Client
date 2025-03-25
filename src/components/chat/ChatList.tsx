@@ -1,146 +1,192 @@
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { ChatEntity } from '../../types/IChat';
-import { SignupFormData } from '../../types';
+import React from "react";
+import { Users, CheckCheck } from "lucide-react";
+import { IChat, SignupFormData } from "../../types";
+import { formatDistanceToNow } from "../../utilities/progress/dateUtilities";
+
 interface ChatListProps {
-  users: ChatEntity[];
-  userId:string;
-  selectedUserId: string | null;
-  onSelectUser: (userId: string) => void;
-  loading?: boolean;
-  unreadCounts?: Record<string, number>;
+  chats: IChat[];
+  users: SignupFormData[];
+  currentUser: SignupFormData | null;
+  selectedChatId: string | null;
+  onSelectChat: (chatId: string) => void;
+  onlineUsers:{ userId: string; socketId?: string }[]|[];
 }
 
-
-export default function ChatList({ 
+const ChatList: React.FC<ChatListProps> = ({
+  chats,
   users,
-  userId,
-  selectedUserId, 
-  onSelectUser,
-  loading = false,
-  unreadCounts = {}
-}: ChatListProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  currentUser,
+  selectedChatId,
+  onSelectChat,
+}) => {
+  const getUserById = (userId: string): SignupFormData | undefined => {
+    return users.find((user) => user._id === userId);
+  };
 
-  const filteredUsers = users
-  .map((chat) => {
-    // Extract the participant who is NOT the current user
-    const participant = chat.participants.find(p =>{if(typeof p !== "string") return p._id === userId});;
-    return participant ? { ...chat, participant } : null;
-  })
-  .filter((chat) => {
-    if (!chat) return false; // Skip invalid chats
-    if (searchTerm && typeof chat.participant !== "string") {
-      return chat.participant.userName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
+  const getChatName = (chat: IChat): string => {
+    if (!chat._id) return "Unnamed Chat"; // Fallback for missing _id
+    if (chat.chatType === "group") {
+      return chat.name || "Unnamed Group";
+    } else {
+      const otherParticipantId = chat.participants.find(
+        (id) => id !== currentUser?._id
+      );
+      if (otherParticipantId) {
+        const otherUser = getUserById(otherParticipantId);
+        return otherUser?.userName ||chat.name|| "Unknown User";
+      }
+      return "Unknown User";
     }
-    return true;
-  });
+  };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow-md h-full p-4">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+  const getChatAvatar = (chat: IChat): string => {
+    if (chat.chatType === "group") {
+      return (
+        chat.avatar ||
+        "https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80"
+      );
+    } else {
+      const otherParticipantId = chat.participants.find(
+        (id) => id !== currentUser?._id
+      );
+      if (otherParticipantId) {
+        const otherUser = getUserById(otherParticipantId);
+        return (
+          (otherUser?.profile?.avatar as string) ||chat.avatar||
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80"
+        );
+      }
+      return "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80";
+    }
+  };
+
+  const getUnreadCount = (chat: IChat): number => {
+    const unreadInfo = chat.unreadCount.find(
+      (u) => u.userId === currentUser?._id
     );
-  }
+    return unreadInfo ? unreadInfo.count : 0;
+  };
+
+  const getLastMessageSender = (chat: IChat): string => {
+    if (!chat.lastMessage?.sender) return "";
+
+    if (chat.lastMessage.sender === currentUser?._id) {
+      return "You";
+    }
+
+    const sender = getUserById(chat.lastMessage.sender);
+    return sender?.userName?.split(" ")[0] || "Unknown";
+  };
+
+  const sortedChats = [...chats].sort((a, b) => {
+    // Safely access the timestamps with fallbacks
+    const getTimestamp = (chat: IChat) => {
+      if (chat.lastMessage?.timestamp instanceof Date) {
+        return chat.lastMessage.timestamp.getTime();
+      } else if (chat.lastMessage?.timestamp) {
+        return new Date(chat.lastMessage.timestamp).getTime();
+      } else if (chat.updatedAt instanceof Date) {
+        return chat.updatedAt.getTime();
+      } else if (chat.updatedAt) {
+        return new Date(chat.updatedAt).getTime();
+      } else {
+        return 0; // Fallback for chats without timestamp
+      }
+    };
+  
+    return getTimestamp(b) - getTimestamp(a);
+  });
+  
 
   return (
-    <div className="bg-white rounded-lg shadow-md h-full flex flex-col">
-      <div className="p-4 border-b space-y-4">
-        <h2 className="text-lg font-semibold">Chats</h2>
-        <input
-          type="text"
-          placeholder="Search chats..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">Messages</h2>
       </div>
-      <div className="overflow-y-auto flex-1">
-        {filteredUsers.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            No chats found
-          </div>
-        ) : (
-          filteredUsers.map((user) => {
-            // Create a proper type guard function
-            const isSignupFormData = (participant: string | SignupFormData|undefined): participant is SignupFormData => {
-              return typeof participant !== "string" && participant !== null && participant !== undefined;
-            };
-            
-            // Skip string participants
-            if (!isSignupFormData(user?.participant)) {
-              return null;
-            }
-            
-            // Now TypeScript knows participant is SignupFormData
-            const participant = user.participant;
-            
-            return (
-              <div
-                key={participant._id}
-                className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
-                  selectedUserId === participant._id ? 'bg-blue-50' : ''
-                }`}
-                onClick={() => {
-                  onSelectUser(participant?._id as string);
-                }}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <img
-                      src={participant.profile?.avatar as string || ''}
-                      alt={`${participant.userName}'s avatar`}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    {participant.isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                    )}
+
+      <div className="overflow-y-auto flex-grow">
+        {sortedChats.map((chat) => {
+          if (!chat._id) return null; // Skip chats without _id
+
+          const chatName = getChatName(chat);
+          const avatar = getChatAvatar(chat);
+          const unreadCount = getUnreadCount(chat);
+          const lastMessageTime = chat.lastMessage?.timestamp
+            ? formatDistanceToNow(chat.lastMessage.timestamp)
+            : formatDistanceToNow(chat.updatedAt);
+          const lastMessageSender = getLastMessageSender(chat);
+          const lastMessageContent =
+            chat.lastMessage?.content || "No messages yet";
+          const isSelected = selectedChatId === chat._id;
+          console.log(chat,"this is chat")
+          return (
+            <div
+              key={chat._id}
+              onClick={() => chat._id && onSelectChat(chat._id)} // Add check here
+              className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                isSelected ? "bg-blue-50" : ""
+              }`}
+            >
+              <div className="flex items-start">
+                <div className="relative mr-3">
+                  <img
+                    src={avatar as string}
+                    alt={chatName}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  {chat.chatType === "group" ? (
+                    <span className="absolute bottom-0 right-0 bg-gray-100 p-1 rounded-full">
+                      <Users size={12} className="text-gray-600" />
+                    </span>
+                  ) : (
+                    getUserById(
+                      chat.participants.find((id) => id !== currentUser?._id) ||
+                        ""
+                    )?.isOnline && (
+                      <span className="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></span>
+                    )
+                  )}
+                </div>
+
+                <div className="flex-grow min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {chatName}
+                    </h3>
+                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                      {lastMessageTime}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {participant.userName}
-                      </h3>
-                      {participant.lastLoginDate && (
-                        <span className="text-xs text-gray-500">
-                          {format(new Date(participant.lastLoginDate), 'HH:mm')}
+
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-sm text-gray-600 truncate">
+                      {chat.lastMessage && (
+                        <span className="inline-flex items-center">
+                          {lastMessageSender && `${lastMessageSender}: `}
+                          {lastMessageContent}
                         </span>
                       )}
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        participant.role === 'instructor'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {participant.role}
-                      </span>
-                      {unreadCounts[participant?._id as string] > 0 && (
-                        <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                          {unreadCounts[participant?._id as string]}
+                    </p>
+
+                    <div className="flex items-center ml-2">
+                      {unreadCount > 0 ? (
+                        <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
-                      )}
+                      ) : chat.lastMessage &&
+                        chat.lastMessage.sender !== currentUser?._id ? (
+                        <CheckCheck size={16} className="text-gray-400" />
+                      ) : null}
                     </div>
                   </div>
                 </div>
               </div>
-            );
-          })
-        )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-}
+};
+
+export default ChatList;

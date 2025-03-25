@@ -1,332 +1,500 @@
-// import React, { useContext, useEffect, useRef, useState } from 'react';
-// import { Send, ArrowLeft } from 'lucide-react';
-// import { User } from '../../types/IUser';
-// import { MessageEntity } from '../../types/IMessageType';
-// import { SocketContext } from '../../context/SocketProvider';
-// import { useAppSelector } from '../../hooks/hooks';
-// import { RootState } from '../../redux';
-// import { SignupFormData } from '../../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Send, 
+  Paperclip, 
+  Smile, 
+  Image, 
+  Mic, 
+  MoreVertical, 
+  Reply, 
+  Edit, 
+  Trash, 
+  CheckCheck, 
+  Check, 
+  X, 
+  ArrowLeft,
+  MessageCircle 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { IChat } from '../../types/IChat';
+import { contentType, IMessage } from '../../types/IMessageType';
+import { SignupFormData } from '../../types';
 
-
-// interface ChatBoxProps {
-//   selectedUser: User | null| undefined;
-//   currentChat:SignupFormData|null;
-//   messages: MessageEntity[];
-//   onSendMessage: (message: { content: string; contentType?: string }) => void;
-//   onBack?: () => void;
-// }
-
-// export default function ChatBox({ selectedUser,currentChat, messages = [], onSendMessage, onBack }: ChatBoxProps) {
-//   const [inputMessage, setInputMessage] = useState("");
-//   const messagesEndRef = useRef<HTMLDivElement>(null);
-//   const { socket } = useContext(SocketContext) || {};
-//   const { data } = useAppSelector((state: RootState) => state.user);
-
-//   const scrollToBottom = () => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-//   };
-
-//   useEffect(() => {
-//     scrollToBottom();
-//   }, [messages]);
-
-//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     socket?.emit("typing", {
-//       roomId: currentChat?.roomId,
-//       senderId: data?._id,
-//     });
-//     setInputMessage(e.target.value);
-//   };
-
-//   const handleSendMessage = async () => {
-//     if (inputMessage.trim() ) {
-
-//       const messageContent =  inputMessage;
-//       const messageType =  "text";
-
-//       onSendMessage({ content: messageContent, contentType: messageType });
-//       setInputMessage("");
-//     }
-//   };
-  
-
-
-//   if (!selectedUser) {
-//     return (
-//       <div className="h-full flex items-center justify-center bg-white rounded-lg shadow-md">
-//         <p className="text-gray-500">Select a chat to start messaging</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="flex flex-col h-full bg-white rounded-lg shadow-md">
-//       <div className="p-4 border-b flex items-center space-x-3">
-//         {onBack && (
-//           <button
-//             onClick={onBack}
-//             className="p-2 hover:bg-gray-100 rounded-full transition-colors mr-2"
-//           >
-//             <ArrowLeft className="w-6 h-6" />
-//           </button>
-//         )}
-//         <img
-//           src={currentChat?.profile?.avatar as string}
-//           alt="User Avatar"
-//           className="w-10 h-10 rounded-full object-cover"
-//         />
-//         <div >
-//           <h2 className="font-semibold">{currentChat?.userName}</h2>
-//           <span className={`text-xs px-2 py-1 rounded-full ${
-//             currentChat?.role === 'instructor' 
-//               ? 'bg-purple-100 text-purple-800' 
-//               : 'bg-blue-100 text-blue-800'
-//           }`}>
-//             {currentChat?.role}
-//           </span>
-//         </div>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {messages.map((message) => (
-//           <div
-//             key={message._id}
-//             className={`flex ${
-//               message.senderId === 'current-user' ? 'justify-end' : 'justify-start'
-//             }`}
-//           >
-//             <div
-//               className={`max-w-[70%] rounded-lg p-3 ${
-//                 message.senderId === 'current-user'
-//                   ? 'bg-blue-500 text-white'
-//                   : 'bg-gray-100 text-gray-900'
-//               }`}
-//             >
-//               <p>{message.content}</p>
-//               <span className={`text-xs ${
-//                 message.senderId === 'current-user' 
-//                   ? 'text-blue-100' 
-//                   : 'text-gray-500'
-//               }`}>
-//                 {message.createdAt as string}
-//               </span>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       <form onSubmit={handleSendMessage} className="p-4 border-t">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={inputMessage}
-//             onChange={handleInputChange}
-//             placeholder="Type your message..."
-//             className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500"
-//           />
-//           <button
-//             type="submit"
-//             className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition-colors"
-//           >
-//             <Send className="w-5 h-5" />
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// }
-
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Send, ArrowLeft, CheckCheck} from 'lucide-react';
-import { format } from 'date-fns';
-import { SocketContext } from '../../context/SocketProvider';
-import { useAppSelector } from '../../hooks/hooks';
-import { RootState } from '../../redux';
-import { contentType, MessageEntity } from '../../types/IMessageType';
-import { UIChatEntity } from '../../types/IChat';
-
-// Types
 interface ChatBoxProps {
-  currentChat: UIChatEntity | null;
-  messages: MessageEntity[];
-  onSendMessage: (message:{ content: string; contentType: contentType }) => void;
+  chat: IChat | null;
+  messages: IMessage[];
+  users: SignupFormData[];
+  currentUser: SignupFormData | null;
+  onSendMessage: (content: string, contentType: contentType, replyToId?: string, fileUrl?: string) => void;
   onBack?: () => void;
-  isOnline?: boolean;
 }
-// Message Component
-const Message = React.memo(({ message, isCurrentUser }: { 
-  message: MessageEntity; 
-  isCurrentUser: boolean 
+
+const ChatBox: React.FC<ChatBoxProps> = ({ 
+  chat, 
+  messages, 
+  users, 
+  currentUser, 
+  onSendMessage,
+  onBack 
 }) => {
-  const time = message.createdAt ? format(new Date(message.createdAt), 'HH:mm') : '';
-  
-  return (
-    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[70%] rounded-lg p-3 relative group ${
-        isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'
-      }`}>
-        {message.isDeleted ? (
-          <p className="italic text-gray-500">Message deleted</p>
-        ) : (
-          <>
-            <p className="break-words">{message.content}</p>
-            <div className="flex items-center justify-end space-x-1 mt-1">
-              <span className={`text-xs ${
-                isCurrentUser ? 'text-blue-100' : 'text-gray-500'
-              }`}>
-                {time}
-              </span>
-              {isCurrentUser && (
-                <CheckCheck className={`w-4 h-4 ${
-                  message.receiverSeen ? 'text-blue-200' : 'text-blue-300'
-                }`} />
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-});
-
-// ChatBox Component
-export default function ChatBox({ 
-  currentChat, 
-  messages = [], 
-  onSendMessage, 
-  onBack,
-  isOnline 
-}: ChatBoxProps) {
-  const [inputMessage, setInputMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [newMessage, setNewMessage] = useState<string>('');
+  const [replyTo, setReplyTo] = useState<IMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { socket } = useContext(SocketContext) || {};
-  const { data: currentUser } = useAppSelector((state: RootState) => state.user);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("isTyping", (data: { senderId: string }) => {
-      if (data.senderId !== currentUser?._id) {
-        setIsTyping(true);
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
-        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
-      }
+  const formatMessageDate = (date?: Date | string): string => {
+    // Ensure we have a Date object
+    const messageDate = date ? new Date(date) : new Date();
+    const today = new Date();
+    
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    return messageDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
+  };
 
-    return () => {
-      socket.off("isTyping");
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [socket, currentUser?._id]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputMessage(e.target.value);
-    socket?.emit("typing", {
-      roomId: currentChat?.roomId,
-      senderId: currentUser?._id,
+  const formatTime = (date?: Date | string): string => {
+    // Ensure we have a Date object
+    const dateObj = date ? new Date(date) : new Date();
+    return dateObj.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
+  };
+
+  const getUserById = (userId: string): SignupFormData | undefined => {
+    return users.find(user => user._id === userId);
+  };
+
+  const getChatName = (): string => {
+    if (!chat) return 'Chat';
+    
+    if (chat.chatType === 'group') {
+      return chat.name || 'Unnamed Group';
+    } else {
+      const otherParticipantId = chat.participants.find(id => id !== currentUser?._id);
+      if (otherParticipantId) {
+        const otherUser = getUserById(otherParticipantId);
+        return otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : (chat.name?chat.name:'Unknown User');
+      }
+      return 'Unknown User';
+    }
+  };
+
+  const getChatAvatar = (): string => {
+    if (!chat) return 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+    
+    if (chat.chatType === 'group') {
+      return chat.avatar || 'https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80';
+    } else {
+      const otherParticipantId = chat.participants.find(id => id !== currentUser?._id);
+      if (otherParticipantId) {
+        const otherUser = getUserById(otherParticipantId);
+        return otherUser?.profile?.avatar as string||chat.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80';
+      }
+      return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80';
+    }
+  };
+
+  const getParticipantsStatus = (): string => {
+    if (!chat) return '';
+    
+    if (chat.chatType === 'group') {
+      return `${chat.participants.length} members`;
+    } else {
+      const otherParticipantId = chat.participants.find(id => id !== currentUser?._id);
+      if (otherParticipantId) {
+        const otherUser = getUserById(otherParticipantId);
+        return otherUser?.isOnline ? 'Online' : 'Offline';
+      }
+      return '';
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputMessage.trim()) {
-      const message = { 
-        content: inputMessage.trim(), 
-        contentType: contentType.text
-      }
-      onSendMessage(message);
-      setInputMessage("");
+    if (newMessage.trim() && chat?._id) {
+      onSendMessage(newMessage, contentType.text, replyTo?._id);
+      setNewMessage('');
+      setReplyTo(null);
     }
   };
 
-  if (!currentChat) {
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Normalize messages to ensure createdAt is a Date object
+  const normalizedMessages = messages.map(message => ({
+    ...message,
+    createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+    updatedAt: message.updatedAt ? new Date(message.updatedAt) : new Date()
+  }));
+
+  const groupedMessages: { [date: string]: IMessage[] } = {};
+  normalizedMessages.forEach(message => {
+    const date = formatMessageDate(message.createdAt);
+    if (!groupedMessages[date]) {
+      groupedMessages[date] = [];
+    }
+    groupedMessages[date].push(message);
+  });
+
+  const isReadByAll = (message: IMessage): boolean => {
+    if (!chat || !currentUser) return false;
+    
+    if (message.sender === currentUser._id) {
+      const otherParticipants = chat.participants.filter(id => id !== currentUser._id);
+      return otherParticipants.every(participantId => 
+        (message.readBy || []).some(read => read.userId === participantId)
+      );
+    }
+    
+    return false;
+  };
+
+  const isReadBySome = (message: IMessage): boolean => {
+    if (!chat || !currentUser) return false;
+    
+    if (message.sender === currentUser._id) {
+      const otherParticipants = chat.participants.filter(id => id !== currentUser._id);
+      return otherParticipants.some(participantId => 
+        (message.readBy || []).some(read => read.userId === participantId)
+      );
+    }
+    
+    return false;
+  };
+
+  const renderMessageContent = (message: IMessage) => {
+    switch (message.contentType) {
+      case contentType.image:
+        return (
+          <div className="mt-1 rounded-lg overflow-hidden">
+            <img 
+              src={message.fileUrl || ''} 
+              alt="Image" 
+              className="max-w-xs md:max-w-sm rounded-lg"
+            />
+          </div>
+        );
+      case contentType.file:
+        return (
+          <div className="mt-1 bg-gray-100 p-3 rounded-lg inline-block">
+            <a 
+              href={message.fileUrl || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center text-blue-600 hover:underline"
+            >
+              <Paperclip size={16} className="mr-2" />
+              <span>{message.content}</span>
+            </a>
+          </div>
+        );
+      case contentType.video:
+        return (
+          <div className="mt-1 rounded-lg overflow-hidden">
+            <video 
+              src={message.fileUrl || ''} 
+              controls 
+              className="max-w-xs md:max-w-sm rounded-lg"
+            />
+          </div>
+        );
+      case contentType.audio:
+        return (
+          <div className="mt-1 bg-gray-100 p-3 rounded-lg">
+            <audio src={message.fileUrl || ''} controls className="w-full" />
+          </div>
+        );
+      default:
+        return <p className="mt-1">{message.content}</p>;
+    }
+  };
+
+  const renderReplyMessage = (replyToId: string) => {
+    const replyMessage = normalizedMessages.find(m => m._id === replyToId);
+    if (!replyMessage) return null;
+    
+    const replySender = getUserById(replyMessage.sender);
+    
     return (
-      <div className="h-full flex items-center justify-center bg-white rounded-lg shadow-md">
-        <p className="text-gray-500">Select a chat to start messaging</p>
+      <div className="bg-gray-100 p-2 rounded-lg mb-2 border-l-4 border-gray-300">
+        <div className="text-xs text-gray-600 font-medium">
+          Reply to {replySender ? `${replySender.firstName} ${replySender.lastName}` : 'Unknown'}
+        </div>
+        <div className="text-sm text-gray-700 truncate">
+          {replyMessage.contentType === contentType.text 
+            ? replyMessage.content 
+            : `${replyMessage.contentType} attachment`}
+        </div>
       </div>
     );
-  }
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { 
+        duration: 1,
+        ease: 'easeOut'
+      }
+    },
+    exit: { 
+      opacity: 0,
+      x: -50,
+      transition: { duration: 0.6 }
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow-md">
-      <div className="p-4 border-b flex items-center space-x-3">
+    <div className="flex flex-col h-full bg-white">
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center">
         {onBack && (
-          <button
+          <button 
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Go back"
+            className="mr-3 p-1 rounded-md hover:bg-gray-100"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft size={24} className="text-gray-600" />
           </button>
         )}
-        <div className="relative">
-          <img
-            src={currentChat.avatar as string}
-            alt={`${currentChat.name}'s avatar`}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-          {isOnline && (
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-          )}
+        <img 
+          src={getChatAvatar()} 
+          alt={getChatName()}
+          className="w-10 h-10 rounded-full object-cover mr-3"
+        />
+        <div className="flex-grow">
+          <h2 className="font-medium text-gray-900">{getChatName()}</h2>
+          <p className="text-xs text-gray-500">{getParticipantsStatus()}</p>
         </div>
-        <div className="flex-1">
-          <h2 className="font-semibold">{currentChat.name}</h2>
-          <div className="flex items-center space-x-2">
-            <span className={`text-xs px-2 py-1 rounded-full ${
-              currentChat.role === 'instructor' 
-                ? 'bg-purple-100 text-purple-800' 
-                : 'bg-blue-100 text-blue-800'
-            }`}>
-              {currentChat.role}
-            </span>
-            {isTyping && (
-              <span className="text-xs text-gray-500">typing...</span>
-            )}
+        <button className="p-2 rounded-full hover:bg-gray-100">
+          <MoreVertical size={20} className="text-gray-600" />
+        </button>
+      </div>
+      
+      {chat ? (
+        <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
+          {Object.keys(groupedMessages).map(date => (
+            <div key={date}>
+              <div className="flex justify-center my-4">
+                <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                  {date}
+                </span>
+              </div>
+              
+              <AnimatePresence>
+                {groupedMessages[date].map(message => {
+                  const isCurrentUser = currentUser && message.sender === currentUser._id;
+                  const sender = getUserById(message.sender);
+                  
+                  return (
+                    <motion.div
+                      key={message._id || Math.random().toString()} // Fallback key if _id is undefined
+                      variants={messageVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      style={{ originX: isCurrentUser ? 1 : 0 }}
+                      className={`mb-4 flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[75%] ${isCurrentUser ? 'order-2' : 'order-1'}`}>
+                        {!isCurrentUser && (
+                          <div className="flex items-center mb-1">
+                            <img 
+                              src={sender?.profile?.avatar as string||chat.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80'} 
+                              alt={`${sender?.firstName} ${sender?.lastName}`} 
+                              className="w-6 h-6 rounded-full mr-2"
+                            />
+                            <span className="text-sm font-medium text-gray-900">
+                              {sender ? `${sender.firstName} ${sender.lastName}` : (chat.name?chat.name:'Unknown User')}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className={`relative group ${isCurrentUser ? 'text-right' : 'text-left'}`}>
+                          {message.replyTo && renderReplyMessage(message.replyTo)}
+                          
+                          <div 
+                            className={`inline-block rounded-lg px-4 py-2 ${
+                              isCurrentUser 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-gray-200 text-gray-800'
+                            }`}
+                          >
+                            {renderMessageContent(message)}
+                            
+                            {message.isEdited && (
+                              <span className="text-xs opacity-70 ml-1">(edited)</span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              {formatTime(message.createdAt)}
+                            </span>
+                            
+                            {isCurrentUser && (
+                              <span className="ml-1">
+                                {isReadByAll(message) ? (
+                                  <CheckCheck size={14} className="text-blue-500" />
+                                ) : isReadBySome(message) ? (
+                                  <CheckCheck size={14} className="text-gray-400" />
+                                ) : (
+                                  <Check size={14} className="text-gray-400" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {message.reactions && message.reactions.length > 0 && (
+                            <div className={`flex mt-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                              <div className="bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100 flex">
+                                {message.reactions.map((reaction, index) => (
+                                  <span key={reaction.userId || index} className="mr-1 last:mr-0">
+                                    {reaction.emoji}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className={`absolute top-0 ${
+                            isCurrentUser ? 'left-0 -translate-x-full' : 'right-0 translate-x-full'
+                          } hidden group-hover:flex bg-white rounded-lg shadow-md border border-gray-100`}>
+                            <button 
+                              className="p-2 hover:bg-gray-100 rounded-l-lg"
+                              onClick={() => setReplyTo(message)}
+                            >
+                              <Reply size={16} className="text-gray-600" />
+                            </button>
+                            {isCurrentUser && (
+                              <>
+                                <button className="p-2 hover:bg-gray-100">
+                                  <Edit size={16} className="text-gray-600" />
+                                </button>
+                                <button className="p-2 hover:bg-gray-100 rounded-r-lg">
+                                  <Trash size={16} className="text-gray-600" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      ) : (
+        <div className="flex-grow flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <MessageCircle size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-600">Please chat with your instructor</h3>
+            <p className="text-gray-500 mt-2">Select a conversation from the list to start messaging</p>
           </div>
         </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <Message 
-            key={message._id}
-            message={message}
-            isCurrentUser={message.senderId === currentUser?._id}
-          />
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form onSubmit={handleSendMessage} className="p-4 border-t">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            aria-label="Message input"
-          />
-          <button
-            type="submit"
-            disabled={!inputMessage.trim()}
-            className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Send message"
+      )}
+      
+      {replyTo && chat && (
+        <div className="px-4 py-2 bg-gray-100 border-t border-gray-200 flex items-center">
+          <div className="flex-grow">
+            <div className="text-xs text-gray-600">
+              Replying to {getUserById(replyTo.sender) ? 
+                `${getUserById(replyTo.sender)?.firstName} ${getUserById(replyTo.sender)?.lastName}` : 'Unknown'}
+            </div>
+            <div className="text-sm text-gray-700 truncate">
+              {replyTo.content}
+            </div>
+          </div>
+          <button 
+            className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+            onClick={() => setReplyTo(null)}
           >
-            <Send className="w-5 h-5" />
+            <X size={16} className="text-gray-600" />
           </button>
         </div>
-      </form>
+      )}
+      
+      {chat && (
+        <div className="p-3 border-t border-gray-200">
+          <form onSubmit={handleSendMessage} className="flex items-end">
+            <div className="flex items-center mr-2">
+              <button 
+                type="button" 
+                className="p-2 rounded-full hover:bg-gray-100"
+                onClick={handleFileUpload}
+              >
+                <Paperclip size={20} className="text-gray-600" />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    const file = e.target.files[0];
+                    const fileUrl = URL.createObjectURL(file);
+                    onSendMessage(file.name, contentType.file, replyTo?._id, fileUrl);
+                    setReplyTo(null);
+                  }
+                }}
+              />
+              
+              <button type="button" className="p-2 rounded-full hover:bg-gray-100">
+                <Image size={20} className="text-gray-600" />
+              </button>
+              
+              <button type="button" className="p-2 rounded-full hover:bg-gray-100">
+                <Mic size={20} className="text-gray-600" />
+              </button>
+            </div>
+            
+            <div className="flex-grow relative">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                rows={1}
+                style={{ maxHeight: '120px', minHeight: '40px' }}
+              />
+              <button type="button" className="absolute right-3 bottom-2">
+                <Smile size={20} className="text-gray-600" />
+              </button>
+            </div>
+            
+            <button 
+              type="submit" 
+              className="ml-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={!newMessage.trim()}
+            >
+              <Send size={20} />
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default ChatBox;
