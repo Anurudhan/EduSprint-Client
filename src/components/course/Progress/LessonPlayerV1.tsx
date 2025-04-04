@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { URL } from "../../common/api";
-import { Lesson } from "../../types/ICourse";
-import { LessonProgressService } from "./LessonProgressService";
-import { EnrollmentEntity } from "../../types";
+import { URL } from "../../../common/api";
+import { Lesson } from "../../../types/ICourse";
+import { LessonProgressService } from "../../user/LessonProgressService";
+import { EnrollmentEntity } from "../../../types";
 
 interface LessonPlayerProps {
   lesson: Lesson;

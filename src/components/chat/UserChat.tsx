@@ -18,7 +18,7 @@ export const UserChat: React.FC = () => {
   const [chats, setChats] = useState<IChat[] | null>(null);
   const [users, setUsers] = useState<SignupFormData[]>([]);
   // Keep track of messages we've sent locally
-  const [localMessageIds, setLocalMessageIds] = useState<Set<string>>(new Set());
+  // const [localMessageIds, setLocalMessageIds] = useState<Set<string>>(new Set());
   
   const location = useLocation();
   const currentUser = useAppSelector((state: RootState) => state.user.data);
@@ -91,7 +91,10 @@ export const UserChat: React.FC = () => {
             msg.content === message.content && 
             msg.sender === message.sender &&
             msg.contentType === message.contentType &&
-            Math.abs(new Date(msg.createdAt).getTime() - new Date(message.createdAt).getTime()) < 10000
+            Math.abs(
+              new Date(msg.createdAt || Date.now()).getTime() - 
+              new Date(message.createdAt || Date.now()).getTime()
+            ) < 10000
           );
 
           if (existingMessageIndex !== -1) {
@@ -99,16 +102,16 @@ export const UserChat: React.FC = () => {
             const updatedMessages = [...prev];
             updatedMessages[existingMessageIndex] = {
               ...message,
-              createdAt: new Date(message.createdAt),
-              updatedAt: new Date(message.updatedAt)
+              createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+              updatedAt: message.updatedAt ? new Date(message.updatedAt) : new Date()
             };
             return updatedMessages;
           } else {
             // If this is not a duplicate message, add it to the chat
             return [...prev, {
               ...message,
-              createdAt: new Date(message.createdAt),
-              updatedAt: new Date(message.updatedAt)
+              createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+              updatedAt: message.updatedAt ? new Date(message.updatedAt) : new Date()
             }];
           }
         });
@@ -116,8 +119,8 @@ export const UserChat: React.FC = () => {
         // Messages from others should always be added (they won't be duplicates)
         setChatMessages(prev => [...prev, {
           ...message,
-          createdAt: new Date(message.createdAt),
-          updatedAt: new Date(message.updatedAt)
+          createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+          updatedAt: message.updatedAt ? new Date(message.updatedAt) : new Date()
         }]);
       }
     };
@@ -163,12 +166,12 @@ export const UserChat: React.FC = () => {
         try {
           const fetchedMessages = await chatApi.fetchMessages(selectedChatId);
           // Reset local message IDs when changing chats
-          setLocalMessageIds(new Set());
+          // setLocalMessageIds(new Set());
           // Normalize dates for consistency
           const messagesWithDates = (fetchedMessages || []).map(msg => ({
             ...msg,
-            createdAt: new Date(msg.createdAt),
-            updatedAt: new Date(msg.updatedAt)
+            createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+            updatedAt: msg.updatedAt ? new Date(msg.updatedAt) : new Date()
           }));
           setChatMessages(messagesWithDates);
         } catch (error) {
@@ -206,11 +209,11 @@ export const UserChat: React.FC = () => {
     };
 
     // Track that we've added this message locally
-    setLocalMessageIds(prev => {
-      const updated = new Set(prev);
-      updated.add(clientId);
-      return updated;
-    });
+    // setLocalMessageIds(prev => {
+    //   const updated = new Set(prev);
+    //   updated.add(clientId);
+    //   return updated;
+    // });
 
     // Update UI immediately
     setChatMessages(prev => [...prev, newMessage]);
@@ -235,11 +238,11 @@ export const UserChat: React.FC = () => {
       setChatMessages(prev => prev.filter(msg => msg._id !== clientId));
       
       // Remove from tracked local messages
-      setLocalMessageIds(prev => {
-        const updated = new Set(prev);
-        updated.delete(clientId);
-        return updated;
-      });
+      // setLocalMessageIds(prev => {
+      //   const updated = new Set(prev);
+      //   updated.delete(clientId);
+      //   return updated;
+      // });
     }
   };
 

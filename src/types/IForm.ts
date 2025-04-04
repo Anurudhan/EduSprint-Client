@@ -56,7 +56,7 @@ export interface SignupFormData {
   isOtpVerified?: boolean;
   isBlocked?: boolean;
   chatId?:string;
-  roomId:string;
+  roomId?:string;
   lastLoginDate?: Date;
   loginStreak?: number;
   lastSeen?: Date;

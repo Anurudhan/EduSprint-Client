@@ -5,13 +5,15 @@ import useDarkMode from '../hooks/userDarkMode';
 import UserSidebar from "../components/user/UserSidebar";
 import StudentCourses from "../pages/user/StudentCourses";
 import StudentProfile from "../pages/user/StudentProfile";
-import StudentAssessments from "../pages/user/StudentAssesments";
+// import StudentAssessments from "../pages/user/StudentAssesments";
 import UserCourse from "../pages/auth/UserCourse";
 import EnrollmentPage from "../pages/user/EnrollementPage";
 import { Invoice } from "../utilities/Invoice/Invoice";
 import UserChat from "../components/chat/UserChat";
 // import { CourseLearning } from "../components/user/CourseLearning";
-import CourseLearningV1 from "../components/user/CourseLearningV1";
+import CourseLearningV1 from "../components/course/Progress/CourseLearningV1";
+import AssessmentResultsPage from "../pages/user/AssessmentResultsPage";
+import AssessmentResultsTracking from "../components/course/Progress/AssessmentResultTracking";
 
 
 const StudentDashboard = lazy(() => import("../pages/user/StudentDashboard"));
@@ -34,7 +36,8 @@ function StudentRoutes() {
               <Route path="MycourseLearning"  element={<CourseLearningV1 />} />
               <Route path="allcourse"  element={<UserCourse />} />
               <Route path="enrollement"  element={<EnrollmentPage />} />
-              <Route path="assessments" element={<StudentAssessments />} />
+              <Route path="assessments" element={<AssessmentResultsPage />} />
+              <Route path="assessmentResult" element={<AssessmentResultsTracking />} />
               <Route path="chat" element={<UserChat />}  />
               <Route path="invoice" element={<Invoice />}  />
               <Route path="profile" element={<StudentProfile />}  />

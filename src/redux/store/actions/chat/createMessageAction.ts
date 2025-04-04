@@ -2,12 +2,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { CLIENT_API } from "../../../../utilities/axios/instance";
 import { config } from "../../../../common/config";
-import { MessageEntity } from "../../../../types/IMessageType";
+import { IMessage } from "../../../../types/IMessageType";
 
 
 export const createMessageAction = createAsyncThunk(
     "chat/createMessage",
-    async (data: MessageEntity,{rejectWithValue}) => {
+    async (data: IMessage,{rejectWithValue}) => {
         try {
 
             const response = await CLIENT_API.post(

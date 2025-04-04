@@ -14,6 +14,7 @@ import {
   X,
   LucideIcon,
   MessageCircle,
+  Calendar,
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux';
@@ -42,6 +43,7 @@ const UserSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
     { icon: BookOpen, label: 'My Courses', path: '/student/mycourses' },
     { icon: ClipboardList, label: 'Courses', path: '/student/allcourse' },
+    { icon: Calendar , label: 'Assessments', path: '/student/Assessments' },
     { icon: MessageCircle, label: 'Chat Support', path: '/student/chat' },
     { icon: Settings, label: 'Settings', path: '/student/settings' },
     { icon: UserCircle, label: 'Profile', path: '/student/profile' },

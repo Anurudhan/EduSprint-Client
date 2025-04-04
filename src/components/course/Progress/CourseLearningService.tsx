@@ -1,25 +1,31 @@
-import { commonRequest, URL } from "../common/api";
-import { config } from "../common/config";
-import { LessonProgressService } from "../components/user/LessonProgressService";
+import { commonRequest, URL } from "../../../common/api";
+import { config } from "../../../common/config";
+import { LessonProgressService } from "../../user/LessonProgressService";
 import {
   AssessmentResult,
   CompleationStatus,
   EnrollmentEntity,
-} from "../types";
-import { Assessment } from "../types/IAssessment";
-import { Lesson } from "../types/ICourse";
-import { generateRandomString } from "./generate/generateRandomString";
+} from "../../../types";
+import { Assessment } from "../../../types/IAssessment";
+import { Lesson } from "../../../types/ICourse";
+import { generateRandomString } from "../../../utilities/generate/generateRandomString";
 
 // Define interfaces
-interface LessonStatus {
+export interface LessonStatus {
   [lessonNumber: string]: "not-started" | "in-progress" | "completed";
 }
 
-interface AssessmentStatus {
+export interface AssessmentStatus {
   [lessonNumber: string]: "locked" | "available" | "completed";
+}
+interface CachedData {
+  enrollment: EnrollmentEntity;
+  assessments: Assessment[];
 }
 
 export class CourseLearningService {
+  static cache: Record<string, CachedData> = {};
+  static debounceTimeout: NodeJS.Timeout | null = null;
   static async fetchEnrollmentAndAssessments(
     enrollmentId: string,
     setEnrollment: (enrollment: EnrollmentEntity) => void,
@@ -28,6 +34,12 @@ export class CourseLearningService {
   ): Promise<void> {
     try {
       setLoading(true);
+      const cacheKey = `enrollment-${enrollmentId}`;
+  if (this.cache[cacheKey]) {
+    setEnrollment(this.cache[cacheKey].enrollment);
+    setAssessments(this.cache[cacheKey].assessments);
+    return;
+  }
       const response = await commonRequest<EnrollmentEntity>(
         "GET",
         `${URL}/course/enrollment/${enrollmentId}`,
@@ -44,6 +56,7 @@ export class CourseLearningService {
           config
         );
         setAssessments(assessmentsResponse.data);
+        this.cache[cacheKey] = { enrollment: response.data, assessments: assessmentsResponse.data };
       }
     } catch (error) {
       console.error("Error fetching enrollment or assessments:", error);
@@ -83,8 +96,7 @@ export class CourseLearningService {
     setShowAssessment: (show: boolean) => void,
     setShowCompletionModal: (show: boolean) => void,
     setCurrentLessonIndex: (index: number) => void,
-    currentLessonIndex: number,
-    setShowLessonCompletionOptions: (show: boolean) => void
+    currentLessonIndex: number
   ): Promise<void> {
     const newCompletedLessons = [
       ...(enrollment.progress?.completedLessons || []),
@@ -99,8 +111,10 @@ export class CourseLearningService {
       lessons.length,
       assessments.length
     );
-
+    if (this.debounceTimeout) clearTimeout(this.debounceTimeout);
     try {
+      this.debounceTimeout = setTimeout(async () => {
+        try {
       const result = await LessonProgressService.updateLessonProgress({
         ...enrollment,
         progress: {
@@ -110,17 +124,21 @@ export class CourseLearningService {
         },
       });
       setEnrollment(result);
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  }, 1000);
       setLessonStatus(
         (prev: LessonStatus): LessonStatus => ({
           ...prev,
           [currentLessonNumber]: "completed",
         })
       );
-      setShowLessonCompletionOptions(true);
 
       const currentAssessment = assessments.find(
         (a) => a.lessonId === currentLessonNumber
       );
+      
       if (currentAssessment) {
         setAssessmentStatus(
           (prev: AssessmentStatus): AssessmentStatus => ({
@@ -130,6 +148,7 @@ export class CourseLearningService {
         );
         setShowAssessment(true);
       } else if (currentLessonIndex < lessons.length - 1) {
+        // If no assessment, automatically move to next lesson
         setCurrentLessonIndex(currentLessonIndex + 1);
       } else {
         setShowCompletionModal(true);
@@ -157,7 +176,8 @@ export class CourseLearningService {
     setShowAssessment: (show: boolean) => void,
     setCurrentLessonIndex: (index: number) => void,
     setShowCompletionModal: (show: boolean) => void,
-    currentLessonIndex: number
+    currentLessonIndex: number,
+    assessments:Assessment[]
   ): Promise<void> {
     const newCompletedAssessments = [
       ...(enrollment.progress?.completedAssessments || []),
@@ -165,7 +185,6 @@ export class CourseLearningService {
     if (!newCompletedAssessments.includes(currentLessonNumber)) {
       newCompletedAssessments.push(currentLessonNumber);
     }
-
     const totalPoints = currentAssessment.questions.reduce(
       (sum, q) => sum + (q.points || 0),
       0
@@ -176,6 +195,7 @@ export class CourseLearningService {
       enrollmentId: enrollment._id || "",
       courseId: currentAssessment.courseId,
       lessonId: currentLessonNumber,
+      userId:enrollment.userId as string,
       assessmentId: currentAssessment._id || "",
       attempts: [
         {
@@ -196,7 +216,10 @@ export class CourseLearningService {
     try {
       const savedAssessment =
         await LessonProgressService.createAssessmentResult(assessmentResult);
-      setAssessmentResults([...assessmentResults, savedAssessment]);
+      
+      const updatedAssessmentResults = [...assessmentResults, savedAssessment];
+      setAssessmentResults(updatedAssessmentResults);
+      
       setAssessmentStatus(
         (prev: AssessmentStatus): AssessmentStatus => ({
           ...prev,
@@ -204,14 +227,44 @@ export class CourseLearningService {
         })
       );
 
+      // Always calculate progress with updated completed assessments
       const progress = this.calculateProgress(
         enrollment.progress?.completedLessons || [],
         newCompletedAssessments,
         lessons.length,
-        assessments.length // Fixed: Use the 'assessments' parameter passed to the function
+        assessments.length
       );
 
       if (score >= currentAssessment.passingScore) {
+        const updateData = {
+          ...enrollment,
+          progress: {
+            ...enrollment.progress,
+            completedAssessments: newCompletedAssessments,
+            overallCompletionPercentage: progress,
+            totalScore: this.calculateTotalScore(updatedAssessmentResults),
+          },
+        };
+
+        // If all lessons are completed
+        if (currentLessonIndex === lessons.length - 1) {
+          updateData.completionStatus = CompleationStatus.Completed;
+          updateData.certificate = {
+            _id: `CERT-${generateRandomString(8)}`,
+            enrollmentId: enrollment._id || "",
+            userId: enrollment.userId || "",
+            courseId: enrollment.courseId || "",
+            issuedAt: new Date(),
+            certificateNumber: `CERT-${Date.now()}`,
+            score: updateData.progress.totalScore,
+          };
+        }
+
+        // Update enrollment
+        const result = await LessonProgressService.updateLessonProgress(updateData);
+        setEnrollment(result);
+
+        // Move to next lesson
         if (currentLessonIndex < lessons.length - 1) {
           setTimeout(() => {
             setCurrentLessonIndex(currentLessonIndex + 1);
@@ -219,28 +272,6 @@ export class CourseLearningService {
           }, 2000);
         } else {
           setShowCompletionModal(true);
-          const result = await LessonProgressService.updateLessonProgress({
-            ...enrollment,
-            progress: {
-              ...enrollment.progress,
-              completedAssessments: newCompletedAssessments,
-              overallCompletionPercentage: progress,
-            },
-            completionStatus: CompleationStatus.Completed,
-            certificate: {
-              _id: `CERT-${generateRandomString(8)}`,
-              enrollmentId: enrollment._id || "",
-              userId: enrollment.userId || "",
-              courseId: enrollment.courseId || "",
-              issuedAt: new Date(),
-              certificateNumber: `CERT-${Date.now()}`,
-              score: this.calculateTotalScore([
-                ...assessmentResults,
-                assessmentResult,
-              ]),
-            },
-          });
-          setEnrollment(result)
         }
       }
     } catch (error) {

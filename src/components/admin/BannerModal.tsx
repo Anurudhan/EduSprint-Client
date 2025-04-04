@@ -46,29 +46,30 @@ export const BannerModal = ({
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Helper function to format date to YYYY-MM-DD
+  const formatDateForInput = (date: Date | string | undefined): string => {
+    if (!date) return new Date().toISOString().split("T")[0];
+    const d = new Date(date);
+    return d.toISOString().split("T")[0];
+  };
+
   const formik = useFormik({
     initialValues: {
       title: "",
       imageUrl: "",
       status: BannerStatus.Scheduled,
-      startDate: new Date().toISOString().split("T")[0],
-      endDate: new Date().toISOString().split("T")[0],
+      startDate: formatDateForInput(new Date()),
+      endDate: formatDateForInput(new Date()),
     },
     validationSchema,
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
-        // Upload image to Cloudinary if a new image is selected
         if (imageFile) {
           const imageUrl = await uploadToCloudinary(imageFile);
-          // Update the imageUrl in the form values
           values.imageUrl = imageUrl;
         }
-        
-        // Call the onSubmit function passed as prop with the updated values
         onSubmit(values);
-        
-        // Reset form and close modal on successful submission
         if (!isEdit) {
           formik.resetForm();
           setImageFile(null);
@@ -76,28 +77,22 @@ export const BannerModal = ({
         }
       } catch (error) {
         console.error("Error submitting form:", error);
-        // You could add error handling here (e.g., display an error message)
       } finally {
         setIsLoading(false);
       }
     },
   });
 
-  // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setImageFile(file);
     
-    // Create preview URL for the selected image
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      
-      // Set the imageUrl field to a temporary value to pass validation
-      // The actual URL will be updated after Cloudinary upload
       formik.setFieldValue("imageUrl", "pending-upload");
     } else {
       setImagePreview("");
@@ -107,26 +102,26 @@ export const BannerModal = ({
 
   useEffect(() => {
     if (banner && isEdit) {
-      // Populate form with banner data when editing
       formik.setValues({
         title: banner.title || "",
         imageUrl: banner.imageUrl || "",
         status: banner.status || BannerStatus.Scheduled,
-        startDate: banner.startDate
-          ? new Date(banner.startDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
-        endDate: banner.endDate
-          ? new Date(banner.endDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
+        startDate: formatDateForInput(banner.startDate),
+        endDate: formatDateForInput(banner.endDate),
       });
-      
-      // Set the image preview when editing
       if (banner.imageUrl) {
         setImagePreview(banner.imageUrl);
       }
     } else {
-      // Reset form and image preview when creating a new banner
-      formik.resetForm();
+      formik.resetForm({
+        values: {
+          title: "",
+          imageUrl: "",
+          status: BannerStatus.Scheduled,
+          startDate: formatDateForInput(new Date()),
+          endDate: formatDateForInput(new Date()),
+        },
+      });
       setImageFile(null);
       setImagePreview("");
     }
@@ -205,9 +200,16 @@ export const BannerModal = ({
                     type="date"
                     name="startDate"
                     value={formik.values.startDate}
-                    onChange={formik.handleChange}
+                    onChange={(e) => {
+                      formik.setFieldValue("startDate", e.target.value);
+                      // Ensure end date stays valid
+                      if (e.target.value > formik.values.endDate) {
+                        formik.setFieldValue("endDate", e.target.value);
+                      }
+                    }}
                     onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+                    min={formatDateForInput(new Date())}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none"
                     required
                   />
                   {formik.touched.startDate && formik.errors.startDate && (
@@ -227,7 +229,8 @@ export const BannerModal = ({
                     value={formik.values.endDate}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+                    min={formik.values.startDate}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none"
                     required
                   />
                   {formik.touched.endDate && formik.errors.endDate && (

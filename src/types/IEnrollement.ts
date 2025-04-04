@@ -22,6 +22,7 @@ export interface AssessmentResult {
     enrollmentId: string;
     courseId: string;
     lessonId: string;
+    userId:string;
     assessmentId: string;
     attempts: {
       score: number;

@@ -14,10 +14,10 @@ interface EditProfileModalProps {
   initialValues: FormValues;
 }
 
-// Define the shape of the form values
+// Define the shape of the form values - updated to match SignupFormData
 export interface FormValues {
   _id?: string;
-  role?:Role;
+  role?: Role;
   firstName: string;
   lastName: string;
   email: string;
@@ -30,6 +30,7 @@ export interface FormValues {
     address: string;
     phone?: string;
   };
+  roomId?: string; // Added to match SignupFormData requirement
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -68,15 +69,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     contact: Yup.object({
       address: Yup.string().required("Address is required"),
       phone: Yup.string()
-    .test('is-valid-phone', 'Phone number is invalid', value => {
-      // Check if the value is undefined or an empty string before validating
-      if (value === undefined || value === '') {
-        return false; // Consider it invalid if undefined or empty
-      }
-      return isValidPhoneNumber(value); // Validate phone number format based on country
-    })
-    .required('Phone number is required'),
-
+        .test('is-valid-phone', 'Phone number is invalid', value => {
+          // Check if the value is undefined or an empty string before validating
+          if (value === undefined || value === '') {
+            return false; // Consider it invalid if undefined or empty
+          }
+          return isValidPhoneNumber(value); // Validate phone number format based on country
+        })
+        .required('Phone number is required'),
     }),
   });
 
@@ -103,7 +103,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values) => {
-              onSubmit(values);
+              // Convert FormValues to SignupFormData by ensuring roomId exists
+              const formData: SignupFormData = {
+                ...values,
+                roomId: values.roomId || '', // Provide a default empty string if not present
+              };
+              onSubmit(formData);
               onClose();
             }}
           >
@@ -233,10 +238,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   />
                 </div>
 
+                {/* Hidden field for roomId if needed */}
+                <Field type="hidden" name="roomId" />
+
                 <div className="text-center">
                   <button
+                    type="button"
                     onClick={onChangePassword}
-                    className="text-blue-600 dark:text-blue-400 font-semibold  hover:text-blue-800 dark:hover:text-blue-300 transition duration-200 ease-in-out"
+                    className="text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-800 dark:hover:text-blue-300 transition duration-200 ease-in-out"
                   >
                     Change Password
                   </button>

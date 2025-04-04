@@ -4,16 +4,16 @@ import { Lesson } from '../../types/ICourse';
 
 interface LessonPlayerProps {
   lesson: Lesson;
-  lessonId:number;
+  lessonId: number;
   isCompleted: boolean;
   isLocked: boolean;
   onComplete: (lessonNumber: string) => void;
-  onMessage:()=>void; // Accepts lessonNumber as a parameter
+  onMessage: () => void;
 }
-
 
 export const LessonPlayer: React.FC<LessonPlayerProps> = ({
   lesson,
+  lessonId,
   isCompleted,
   isLocked,
   onComplete,
@@ -23,59 +23,69 @@ export const LessonPlayer: React.FC<LessonPlayerProps> = ({
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
-    onComplete();
+    onComplete(lessonId.toString()); // Fixed: Pass lessonId as string
   };
- 
+
   if (isLocked) {
     return (
-      <div className="bg-gray-100 rounded-lg p-8 text-center">
-        <Lock className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+      <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
+        <Lock className="mr-2 text-gray-500" />
         <p className="text-gray-600">Complete the previous lesson to unlock this content</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+    <div className="flex flex-col rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-gray-100 p-4">
         {lesson.video ? (
-          <video
-            className="w-full h-full"
+          <video 
+            className="w-full rounded-lg" 
             controls
             onEnded={handleVideoEnd}
-            src={lesson.video}
-          />
+          >
+            <source src={lesson.video} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <PlayCircle className="w-16 h-16 text-gray-400" />
+          <div className="flex items-center justify-center h-48 bg-gray-200 rounded-lg">
+            <PlayCircle size={48} className="text-gray-400" />
           </div>
         )}
       </div>
       
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-          {isCompleted && <CheckCircle className="w-5 h-5 text-green-500" />}
-          {lesson.title}
-        </h3>
-        <p className="text-gray-600 mb-4">{lesson.description}</p>
+      <div className="p-4">
+        <div className="flex items-center mb-2">
+          {isCompleted && <CheckCircle size={18} className="mr-2 text-green-500" />}
+          <h2 className="text-xl font-semibold">{lesson.title}</h2>
+        </div>
+        
+        <p className="text-gray-700 mb-4">{lesson.description}</p>
         
         {lesson.objectives && lesson.objectives.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-gray-900">Learning Objectives:</h4>
-            <ul className="list-disc list-inside text-gray-600 space-y-1">
+          <div className="mb-4">
+            <h3 className="font-medium mb-2">Learning Objectives:</h3>
+            <ul className="list-disc pl-6">
               {lesson.objectives.map((objective, index) => (
-                <li key={index}>{objective}</li>
+                <li key={index} className="text-gray-600 mb-1">{objective}</li>
               ))}
             </ul>
           </div>
         )}
-        <button
-              onClick={onMessage}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span className="hidden sm:inline">Message Instructor</span>
+        
+        <button 
+          onClick={onMessage}
+          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          <MessageSquare size={18} className="mr-2" />
+          Message Instructor
         </button>
+        
+        {!isCompleted && videoEnded && (
+          <div className="mt-4 text-green-600">
+            Video completed! Click "Mark as Complete" to continue.
+          </div>
+        )}
       </div>
     </div>
   );

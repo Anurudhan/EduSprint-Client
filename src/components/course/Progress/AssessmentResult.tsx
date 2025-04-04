@@ -1,6 +1,6 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import {  Question } from '../../types/IAssessment';
+import { Question } from '../../../types/IAssessment';
 
 interface AssessmentProps {
   questions: Question[];
@@ -20,7 +20,7 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
       switch (question.type) {
         case 'multiple_choice':
           isCorrect = question.choices?.some(choice => 
-            choice.id === selectedAnswer && choice.isCorrect
+            choice.text === selectedAnswer && choice.isCorrect
           ) || false;
           break;
         case 'true_false':
@@ -38,7 +38,10 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
     });
 
     const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
-    const earnedPoints = results.reduce((sum, r) => sum + (r.isCorrect ? questions.find(q => q.id === r.questionId)?.points || 0 : 0), 0);
+    const earnedPoints = results.reduce((sum, r) => 
+      sum + (r.isCorrect ? questions.find(q => q.id === r.questionId)?.points || 0 : 0), 
+      0
+    );
     const newScore = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
     
     setScore(newScore);
@@ -49,20 +52,19 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
   const renderQuestionOptions = (question: Question) => {
     switch (question.type) {
       case 'multiple_choice': {
-        // Added block scope with curly braces
         return question.choices?.map(choice => (
           <label
             key={choice.id}
             className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all
               ${submitted 
-                ? answers[question.id] === choice.id
+                ? answers[question.id] === choice.text
                   ? choice.isCorrect
                     ? 'bg-green-50 border-green-500'
                     : 'bg-red-50 border-red-500'
                   : choice.isCorrect
                     ? 'bg-green-50 border-green-500'
                     : 'border-gray-200'
-                : answers[question.id] === choice.id
+                : answers[question.id] === choice.text
                   ? 'bg-blue-50 border-blue-500'
                   : 'hover:bg-gray-50 border-gray-200'
               }`}
@@ -70,9 +72,9 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
             <input
               type="radio"
               name={question.id}
-              value={choice.id}
-              checked={answers[question.id] === choice.id}
-              onChange={() => !submitted && setAnswers({ ...answers, [question.id]: choice.id })}
+              value={choice.text} // Use text instead of id
+              checked={answers[question.id] === choice.text}
+              onChange={() => !submitted && setAnswers({ ...answers, [question.id]: choice.text })}
               disabled={submitted}
               className="mr-3"
             />
@@ -81,7 +83,7 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
               <div className="ml-auto">
                 {choice.isCorrect ? (
                   <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : answers[question.id] === choice.id ? (
+                ) : answers[question.id] === choice.text ? (
                   <XCircle className="w-5 h-5 text-red-500" />
                 ) : null}
               </div>
@@ -91,7 +93,6 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
       }
 
       case 'true_false': {
-        // Added block scope with curly braces
         const tfOptions = [
           { id: 'true', text: 'True' },
           { id: 'false', text: 'False' }
@@ -101,14 +102,14 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
             key={option.id}
             className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all
               ${submitted 
-                ? answers[question.id] === option.id
-                  ? option.id === question.correctAnswer
+                ? answers[question.id] === option.text
+                  ? option.text.toLowerCase() === question.correctAnswer
                     ? 'bg-green-50 border-green-500'
                     : 'bg-red-50 border-red-500'
-                  : option.id === question.correctAnswer
+                  : option.text.toLowerCase() === question.correctAnswer
                     ? 'bg-green-50 border-green-500'
                     : 'border-gray-200'
-                : answers[question.id] === option.id
+                : answers[question.id] === option.text
                   ? 'bg-blue-50 border-blue-500'
                   : 'hover:bg-gray-50 border-gray-200'
               }`}
@@ -116,18 +117,18 @@ export function AssessmentResultV1({ questions, onComplete }: AssessmentProps) {
             <input
               type="radio"
               name={question.id}
-              value={option.id}
-              checked={answers[question.id] === option.id}
-              onChange={() => !submitted && setAnswers({ ...answers, [question.id]: option.id })}
+              value={option.text} // Use text instead of id
+              checked={answers[question.id] === option.text}
+              onChange={() => !submitted && setAnswers({ ...answers, [question.id]: option.text })}
               disabled={submitted}
               className="mr-3"
             />
             <span className="flex-1">{option.text}</span>
             {submitted && (
               <div className="ml-auto">
-                {option.id === question.correctAnswer ? (
+                {option.text.toLowerCase() === question.correctAnswer ? (
                   <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : answers[question.id] === option.id ? (
+                ) : answers[question.id] === option.text ? (
                   <XCircle className="w-5 h-5 text-red-500" />
                 ) : null}
               </div>
