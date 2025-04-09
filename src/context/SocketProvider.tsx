@@ -48,6 +48,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
                         userId: data._id
                     }
                 });
+                const ws = new WebSocket('wss://edusprint.shop/socket.io/');
+                ws.onopen = () => console.log('Connected!');
+                ws.onerror = (error) => console.log('Error: this is new erro for the socket host---->', error);
 
             newSocket.on("connect", () => {
                 console.log("Socket connected at client");
