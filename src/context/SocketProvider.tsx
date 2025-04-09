@@ -37,16 +37,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     useEffect(() => {
         if ((data?.role === "student" || data?.role === "instructor") && SOCKET_BACKEND_URL) {
-            const transports = IS_LOCAL_ENV
-                ? ['polling', 'websocket']  // locally
-                : ['websocket'];            // production
+            // const transports = IS_LOCAL_ENV
+            //     ? ['polling', 'websocket']  // locally
+            //     : ['websocket'];            // production
 
-            const newSocket: Socket = io(SOCKET_BACKEND_URL, {
-                transports,
-                query: {
-                    userId: data._id
-                }
-            });
+                const newSocket: Socket = io("https://edusprint.shop", {
+                    path: "/socket.io",
+                    transports: ['websocket'],
+                    query: {
+                        userId: data._id
+                    }
+                });
 
             newSocket.on("connect", () => {
                 console.log("Socket connected at client");
