@@ -49,10 +49,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         if ((data?.role === Role.Student || data?.role === Role.Instructor || data?.role ===Role.Admin) && SOCKET_BACKEND_URL) {
             const transports = IS_LOCAL_ENV
                 ? ['polling', 'websocket']  // locally
-                : ['websocket'];            // production
+                : ['websocket', 'polling'];            // production
 
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
-                    path: "/socket.io",
+                    path: "/socket.io/",
                     transports: transports,
                     query: {
                         userId: data._id
@@ -75,14 +75,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
                 console.log("Socket disconnected");
             });
             // In SocketProvider
-newSocket.on("user-blocked", () => {
-    console.log("User has been blocked");
-    // Show notification to user
-    ToastService.error("Your account has been blocked by an administrator. You will be logged out.");
-    // Short delay before logout
-      handleLogout();
-   
-  });
+            newSocket.on("user-blocked", () => {
+                console.log("User has been blocked");
+                // Show notification to user
+                ToastService.error("Your account has been blocked by an administrator. You will be logged out.");
+                // Short delay before logout
+                handleLogout();
+            
+            });
             setSocket(newSocket);
 
             // Cleanup
