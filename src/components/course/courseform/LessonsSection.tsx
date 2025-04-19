@@ -21,6 +21,7 @@ const LessonsSection: React.FC<LessonsSectionProps> = ({
   errors = {}
 }) => {
   const [lessonValidations, setLessonValidations] = useState<Record<number, boolean>>({});
+  if(lessonValidations) console.log("glad for the validations")
   // Add a new lesson to the course
   const addLesson = () => {
     setCourse((prev) => ({
