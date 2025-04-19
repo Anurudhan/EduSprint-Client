@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { useAppDispatch } from "../../hooks/hooks";
 import { getAllStudents } from "../../redux/store/actions/user";
 import { SignupFormData } from "../../types";
@@ -6,14 +6,16 @@ import UsersList from "./UsersList";
 import LoadingSpinner from "../common/loadingSpinner";
 import ErrorMessage from "../common/ErrorMessage";
 import ManageUserModal from "./ManageUserModal";
-import MessageToast from "../common/MessageToast";
-import { MessageType } from "../../types/IMessageType";
 import { unblockBlockUser } from "../../redux/store/actions/user/unblockBlockUser";
+import { SocketContext } from "../../context/SocketProvider";
+import { ToastService } from "../common/Toast/ToastifyV1";
 
 
 
 
 const AdminStudents = () => {
+    const socketContext = useContext(SocketContext);
+    const socket = socketContext?.socket;
     const dispatch = useAppDispatch();
     const [students, setStudents] = useState<SignupFormData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -21,8 +23,6 @@ const AdminStudents = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedUser , setSelectedUser ] = useState<SignupFormData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [message, setMessage] = useState("");
-  const [type, setType] = useState<MessageType>("error");
 
     const fetchStudents = useCallback(async () => {
         setLoading(true);
@@ -74,19 +74,22 @@ const AdminStudents = () => {
         if (selectedUser ) {
             const response = await dispatch(unblockBlockUser({ ...selectedUser,isBlocked:!selectedUser.isBlocked}));
             if (response.payload.success) {
-                setMessage(`${selectedUser.email} ${selectedUser?.isBlocked ? "unblocked" : "blocked"} successfully!`);
-                setType("success")
+                if(socket && !selectedUser.isBlocked) {
+                    socket.emit("block-user",{userId: selectedUser?._id});
+                    // console.log(`emitted block user event for the user ${user._id}`);
+                  }else{
+                    console.log("socket is not availabele");
+                  }
+                ToastService.success(`${selectedUser.email} ${selectedUser?.isBlocked ? "unblocked" : "blocked"} successfully!`);
                 fetchStudents();
             } else {
-                setMessage(`Failed to ${selectedUser?.isBlocked? "unblock" : "block"} instructor`);
-                setType("error")
+                ToastService.error(`Failed to ${selectedUser?.isBlocked? "unblock" : "block"} instructor`);
             }
             handleCloseModal();
         }
     }
     catch(error:unknown){
-        setMessage(String(error));
-        setType("error")
+        ToastService.error(String(error));
     }
     };
 
@@ -99,9 +102,6 @@ const AdminStudents = () => {
             setCurrentPage((prevPage) => prevPage - 1);
         }
     };
-    const handleMessage = async (Message: string): Promise<void> => {
-        setMessage(Message);
-      };
     
     return (
         <div className="p-4">
@@ -117,13 +117,7 @@ const AdminStudents = () => {
                     />
                 </div>
             )}
-            {message && (
-        <MessageToast
-          message={message}
-          type={type}
-          onMessage={(Message) => handleMessage(Message)}
-        />
-      )}
+    
             {isModalOpen && (
                 <ManageUserModal 
                     user={selectedUser } 

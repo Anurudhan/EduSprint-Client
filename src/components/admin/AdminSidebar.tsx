@@ -7,7 +7,7 @@ import {
   Receipt,
   Image,
   UserPlus,
-  Settings,
+  // Settings,
   LogOut,
   Sun,
   Moon,
@@ -51,7 +51,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     { icon: Image, label: 'Banners', path: '/admin/banners' },
     { icon: UserPlus, label: 'Requests', path: '/admin/requests' },
     // { icon: AlertCircle, label: 'Complaints', path: '/admin/complaints' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    // { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
   useEffect(() => {

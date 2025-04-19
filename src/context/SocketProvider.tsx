@@ -1,7 +1,10 @@
 import React, { createContext, useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
-import { useAppSelector } from "../hooks/hooks";
+import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import { RootState } from "../redux";
+import { logoutAction } from "../redux/store/actions/auth";
+import { ToastService } from "../components/common/Toast/ToastifyV1";
+import { Role } from "../types";
 
 interface SocketContextType {
     socket: Socket | null;
@@ -15,9 +18,9 @@ interface SocketProviderProps {
     children: React.ReactNode;
 }
 
-// const SOCKET_BACKEND_URL = import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL;
-const IS_LOCAL_ENV = import.meta.env.MODE === 'development';
-const SOCKET_BACKEND_URL = IS_LOCAL_ENV?import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL:import.meta.env.VITE_REACT_SOCKET_URL;
+const SOCKET_BACKEND_URL = import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL;
+const IS_LOCAL_ENV = import.meta.env.VITE_MODE === 'development';
+// const SOCKET_BACKEND_URL = IS_LOCAL_ENV?import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL:import.meta.env.VITE_REACT_SOCKET_URL;
 
 export const SocketContext = createContext<SocketContextType | null>(null);
 
@@ -26,6 +29,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<{ userId: string; socketId: string }[]>([]);
     const [currentRoom, setCurrentRoom] = useState<string>("");
+    const dispatch = useAppDispatch()
 
     const contextValues: SocketContextType = {
         socket,
@@ -34,23 +38,26 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         currentRoom, 
         setCurrentRoom,
     };
+    const handleLogout = () => {
+        // console.log("222222222222222222222222222ahandle logout");
+        dispatch(logoutAction());
+    };
 
     useEffect(() => {
-        if ((data?.role === "student" || data?.role === "instructor") && SOCKET_BACKEND_URL) {
-            // const transports = IS_LOCAL_ENV
-            //     ? ['polling', 'websocket']  // locally
-            //     : ['websocket'];            // production
+        console.log("SocketProvider user data:", data); // check if admin data is present
+    console.log("SOCKET_BACKEND_URL", SOCKET_BACKEND_URL); // ensure it's defined
+        if ((data?.role === Role.Student || data?.role === Role.Instructor || data?.role ===Role.Admin) && SOCKET_BACKEND_URL) {
+            const transports = IS_LOCAL_ENV
+                ? ['polling', 'websocket']  // locally
+                : ['websocket'];            // production
 
-                const newSocket: Socket = io("https://edusprint.shop", {
+                const newSocket: Socket = io(SOCKET_BACKEND_URL, {
                     path: "/socket.io",
-                    transports: ['websocket'],
+                    transports: transports,
                     query: {
                         userId: data._id
                     }
                 });
-                const ws = new WebSocket('wss://edusprint.shop/socket.io/');
-                ws.onopen = () => console.log('Connected!');
-                ws.onerror = (error) => console.log('Error: this is new erro for the socket host---->', error);
 
             newSocket.on("connect", () => {
                 console.log("Socket connected at client");
@@ -67,7 +74,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
             newSocket.on("disconnect", () => {
                 console.log("Socket disconnected");
             });
-
+            // In SocketProvider
+newSocket.on("user-blocked", () => {
+    console.log("User has been blocked");
+    // Show notification to user
+    ToastService.error("Your account has been blocked by an administrator. You will be logged out.");
+    // Short delay before logout
+      handleLogout();
+   
+  });
             setSocket(newSocket);
 
             // Cleanup

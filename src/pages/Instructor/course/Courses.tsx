@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, Search, Clock, Users, Star } from "lucide-react";
 import { CourseEntity, Level } from "../../../types/ICourse";
-import MessageToast from "../../../components/common/MessageToast";
 import { useAppDispatch } from "../../../hooks/hooks";
 import { getCoursesByInstructorIdAction } from "../../../redux/store/actions/course/getCoursesByInstructorIdAction";
 import { useSelector } from "react-redux";
@@ -17,16 +16,11 @@ const createDebouncedFetch = (
 export function Courses() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data } = useSelector((state: RootState) => state.user);
-  const location = useLocation();
   const [courses, setCourse] = useState<CourseEntity[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [message, setMessage] = useState<string | null>(
-    location.state?.message || null
-  );
 
-  const type = "success";
   const getLevelColor = (level: Level) => {
     switch (level) {
       case Level.beginner:
@@ -76,7 +70,7 @@ export function Courses() {
       fetchCourses.cancel();
     };
   }, [page, fetchCourses]);
-  if(loading) <LoadingSpinner />
+  if(loading) return <LoadingSpinner />
 
   return (
     <div>
@@ -228,16 +222,6 @@ export function Courses() {
           </motion.button>
         </div>
         </>
-      )}
-      {message && (
-        <MessageToast
-          message={message}
-          type={type}
-          onMessage={(Message) => {
-            setMessage(Message);
-            location.state = "";
-          }}
-        />
       )}
       {loading && <LoadingSpinner />}
     </div>

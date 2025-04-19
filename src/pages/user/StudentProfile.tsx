@@ -81,7 +81,7 @@ const StudentProfile = () => {
       const value = { ...values,_id:data?._id, profile: profile, contact: contact };
       const updateResult = await dispatch(updateUser(value));
       if (!updateResult?.payload?.success) {
-        handleMessage("updating Profile failed. Please Try again!");
+        handleMessage(updateResult?.payload?.message||"updating Profile failed. Please Try again!");
         setType("error");
       } else {
         handleMessage("Successfully updated your Profile.");

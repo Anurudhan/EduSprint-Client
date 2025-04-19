@@ -5,7 +5,7 @@ import {
   BookOpen,
   // Users,
   // ClipboardList,
-  Settings,
+  // Settings,
   LogOut,
   Sun,
   Moon,
@@ -19,7 +19,7 @@ import {
   DollarSign,
   // Award,
   // Video,
-  Bell,
+  // Bell,
   // BookMarked,
   UserCog,
 } from 'lucide-react';
@@ -117,22 +117,22 @@ const InstructorSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) 
     //   label: 'Resources', 
     //   path: '/instructor/resources'
     // },
-    { 
-      icon: Bell, 
-      label: 'notifications', 
-      path: '/instructor/notifications',
-      // badge: 5
-    },
+    // { 
+    //   icon: Bell, 
+    //   label: 'notifications', 
+    //   path: '/instructor/notifications',
+    //   // badge: 5
+    // },
     { 
       icon: UserCog, 
       label: 'Profile', 
       path: '/instructor/profile'
     },
-    { 
-      icon: Settings, 
-      label: 'Settings', 
-      path: '/instructor/settings'
-    },
+    // { 
+    //   icon: Settings, 
+    //   label: 'Settings', 
+    //   path: '/instructor/settings'
+    // },
   ];
 
   useEffect(() => {
