@@ -7,7 +7,7 @@ const URL = import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL
 export const chatApi = {
   // Fetch all chats for the current user
   fetchChats: async (userId: string): Promise<IChat[]|null> => {
-    const response = await commonRequest<IChat[]|null>('GET', `${URL}/chat/user?userId=${userId}`,undefined,config);
+    const response = await commonRequest<IChat[]|null>('GET', `${URL}/user?userId=${userId}`,undefined,config);
     return response.data;
   },
   // Create a new chat
