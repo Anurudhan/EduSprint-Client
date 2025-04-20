@@ -12,22 +12,22 @@ export const chatApi = {
   },
   // Create a new chat
   createChat: async (participants: string[]): Promise<IChat> => {
-    const response = await commonRequest<IChat>('POST', `${URL}/chat/`, { participants, chatType: ChatType.individual},config);
+    const response = await commonRequest<IChat>('POST', `${URL}/`, { participants, chatType: ChatType.individual},config);
     console.log(response, "this is test response")
     return response.data;
   },
   // Fetch messages for a specific chat
   fetchMessages: async (chatId: string): Promise<IMessage[]> => {
-    const response = await commonRequest<IMessage[]>('GET', `${URL}/chat/messages?chatId=${chatId}`,undefined,config);
+    const response = await commonRequest<IMessage[]>('GET', `${URL}/messages?chatId=${chatId}`,undefined,config);
     return response.data;
   },
   // Send a new message     
   sendMessage: async (message: IMessage): Promise<IMessage> => {
-    const response = await commonRequest<IMessage>('POST', `${URL}/chat/message`, message,config);
+    const response = await commonRequest<IMessage>('POST', `${URL}/message`, message,config);
     return response.data;
   },
   fetchUsers:async(Ids:string):Promise<SignupFormData[]> =>{
-    const response = await commonRequest<SignupFormData[]>("GET",`${URL}/chat/users?ids=${Ids}`,undefined,config);
+    const response = await commonRequest<SignupFormData[]>("GET",`${URL}/users?ids=${Ids}`,undefined,config);
     return response.data||null;
   }
 };
