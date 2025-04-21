@@ -28,8 +28,6 @@ const Requests = () => {
       const resultAction = await dispatch(
         getAllInstructors({ page: currentPage, limit: 10 })
       );
-      console.log(resultAction.payload.data);
-
       if (getAllInstructors.fulfilled.match(resultAction)) {
         const studentsData = resultAction.payload.data;
         if (studentsData.length > 0) {
