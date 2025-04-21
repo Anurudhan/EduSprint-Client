@@ -1,5 +1,5 @@
 import React, {  useState } from 'react';
-import { MessageType } from '../../types/IMessageType';
+import { MessageType } from '../../../types/IMessageType';
 
 export interface MessageProps {
   message: string;

@@ -6,9 +6,9 @@ import { Menu, X, Search, Sun, Moon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../../redux';
 import { logoutAction } from '../../../redux/store/actions/auth';
-import MessageToast from '../MessageToast';
+import MessageToast from '../Toast/MessageToast';
 import { MessageType } from '../../../types/IMessageType';
-import ConfirmationModal from '../ConfirmationModal';
+import ConfirmationModal from '../Toast/ConfirmationModal';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

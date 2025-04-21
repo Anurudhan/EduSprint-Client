@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { SearchBar } from "../../components/common/SearchBar";
+import { SearchBar } from "../../components/common/Search/SearchBar";
 import { Filters } from "../../components/course/Filters";
 import { CourseCard } from "../../components/course/card/CourseCard";
-import { Pagination } from "../../components/common/Pagination";
+import { Pagination } from "../../components/common/Pagination/Pagination";
 import { CourseEntity, FilterState } from "../../types/ICourse";
 import { useAppDispatch } from "../../hooks/hooks";
 import { getAllCourse } from "../../redux/store/actions/course/getAllCourse";
@@ -10,7 +10,7 @@ import LoadingSpinner from "../../components/common/loadingSpinner";
 import { useLocation } from "react-router-dom";
 import { SearchX } from "lucide-react";
 import { MessageType } from "../../types/IMessageType";
-import MessageToast from "../../components/common/MessageToast";
+import MessageToast from "../../components/common/Toast/MessageToast";
 
 function UserCourse() {
   const location = useLocation();

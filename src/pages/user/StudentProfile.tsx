@@ -24,7 +24,7 @@ import { toast } from "react-toastify";
 import { forgotPasswordMailAction } from "../../redux/store/actions/auth/forgotPasswordMailAction";
 import { useAppDispatch } from "../../hooks/hooks";
 import { MessageType } from "../../types/IMessageType";
-import MessageToast from "../../components/common/MessageToast";
+import MessageToast from "../../components/common/Toast/MessageToast";
 import { updateUser } from "../../redux/store/actions/user/updateUser";
 import { SignupFormData } from "../../types";
 import EditProfileModal from "../../components/user/EditProfileModal";

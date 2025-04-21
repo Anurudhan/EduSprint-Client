@@ -19,7 +19,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux';
 import { logoutAction } from '../../redux/store/actions/auth';
-import ConfirmationModal from '../common/ConfirmationModal';
+import ConfirmationModal from '../common/Toast/ConfirmationModal';
 import { useAppSelector } from '../../hooks/hooks';
 
 interface NavItemProps {

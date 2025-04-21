@@ -20,7 +20,7 @@ import AdminAuthCheck from "./routes/AdminAuthCheck";
 import AdminRoutes from "./routes/AdminRoutes";
 import LoadingSpinner from "./components/common/loadingSpinner";
 import { MessageType } from "./types/IMessageType";
-import MessageToast from "./components/common/MessageToast";
+import MessageToast from "./components/common/Toast/MessageToast";
 import UserCourse from "./pages/auth/UserCourse";
 import { PaymentSuccess } from "./components/payment/PaymentSuccess";
 import { PaymentFailed } from "./components/payment/PaymentFailed";

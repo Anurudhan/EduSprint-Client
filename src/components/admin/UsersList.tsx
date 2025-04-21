@@ -2,16 +2,10 @@ import { SignupFormData } from "../../types";
 
 const UsersList = ({
     users,
-    onNextPage,
-    onPreviousPage,
     onEdit,
-    currentPage,
 }: { 
     users: SignupFormData[],
-    onNextPage: () => void,
-    onPreviousPage: () => void,
     onEdit:(user: SignupFormData) => void,
-    currentPage: number
 }) =>{
     
 
@@ -75,25 +69,6 @@ const UsersList = ({
                     ))}
                 </tbody>
             </table>
-        </div>
-        
-        <div className="flex justify-between items-center mt-4 px-4 py-2">
-            <button 
-                onClick={onPreviousPage} 
-                disabled={currentPage === 1} 
-                className={`px-4 py-2 text-sm font-medium ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800'} dark:text-blue-400 dark:hover:text-blue-300`}
-            >
-                Previous
-            </button>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Page {currentPage}
-            </span>
-            <button 
-                onClick={onNextPage} 
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-                Next
-            </button>
         </div>
         
     </div>

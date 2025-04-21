@@ -23,7 +23,7 @@ import {
   // BookMarked,
   UserCog,
 } from 'lucide-react';
-import ConfirmationModal from '../common/ConfirmationModal';
+import ConfirmationModal from '../common/Toast/ConfirmationModal';
 import { logoutAction } from '../../redux/store/actions/auth';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux';

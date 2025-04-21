@@ -7,7 +7,7 @@ import LoadingSpinner from "../../components/common/loadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import InstructorDetailsModal from "./InstructorDeatailModal";
 import { verifyInstructor } from "../../redux/store/actions/user/verifyInstructor";
-import MessageToast from "../../components/common/MessageToast";
+import MessageToast from "../../components/common/Toast/MessageToast";
 import { MessageType } from "../../types/IMessageType";
 
 const Requests = () => {

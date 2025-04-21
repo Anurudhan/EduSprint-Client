@@ -6,7 +6,7 @@ import {
   BookOpen,
   UserCircle,
   ClipboardList,
-  Settings,
+  // Settings,
   LogOut,
   Sun,
   Moon,
@@ -19,7 +19,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux';
 import { logoutAction } from '../../redux/store/actions/auth';
-import ConfirmationModal from '../common/ConfirmationModal';
+import ConfirmationModal from '../common/Toast/ConfirmationModal';
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -45,7 +45,7 @@ const UserSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
     { icon: ClipboardList, label: 'Courses', path: '/student/allcourse' },
     { icon: Calendar , label: 'Assessments', path: '/student/Assessments' },
     { icon: MessageCircle, label: 'Chat Support', path: '/student/chat' },
-    { icon: Settings, label: 'Settings', path: '/student/settings' },
+    // { icon: Settings, label: 'Settings', path: '/student/settings' },
     { icon: UserCircle, label: 'Profile', path: '/student/profile' },
     // { icon: Calendar, label: 'Schedule', path: '/student/schedule' },
     // { icon: Trophy, label: 'Achievements', path: '/student/achievements' },

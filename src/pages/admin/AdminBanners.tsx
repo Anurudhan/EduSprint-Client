@@ -4,7 +4,7 @@ import { BannerModal } from '../../components/admin/BannerModal';
 import { BannerEntity, BannerStatus } from '../../types/IBanner';
 import { commonRequest, URL } from '../../common/api';
 import { config } from '../../common/config';
-import { ConfirmModal2 } from '../../components/common/confirmationModal2';
+import { ConfirmModal2 } from '../../../confirmationModal2';
 import { toastUtils } from '../../components/common/Toast/ToastUtilities';
 
 const ITEMS_PER_PAGE = 3;
