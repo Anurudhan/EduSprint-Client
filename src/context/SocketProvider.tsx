@@ -41,6 +41,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const handleLogout = () => {
         // console.log("222222222222222222222222222ahandle logout");
         dispatch(logoutAction());
+        ToastService.error("your blocked by admin")
     };
 
     useEffect(() => {
@@ -53,7 +54,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
                     // path: "/socket.io",
-                    // transports: transports,
+                    transports: ['websocket'],
                     // secure: true,
                     // withCredentials: true,
                     query: {
