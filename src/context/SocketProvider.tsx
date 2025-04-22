@@ -52,7 +52,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
                 : ['websocket', 'polling'];            // production
 
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
-                    path: "/socket.io/",
+                    path: "/socket.io",
                     transports: transports,
                     secure: true,
                     withCredentials: true,
