@@ -19,7 +19,6 @@ interface SocketProviderProps {
 }
 
 const SOCKET_BACKEND_URL = import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL;
-// const IS_LOCAL_ENV = import.meta.env.VITE_MODE === 'development'; 
 // const SOCKET_BACKEND_URL = IS_LOCAL_ENV?import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL:import.meta.env.VITE_REACT_SOCKET_URL;
 
 export const SocketContext = createContext<SocketContextType | null>(null);
@@ -48,15 +47,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         console.log("SocketProvider user data:", data); // check if admin data is present
     console.log("SOCKET_BACKEND_URL", SOCKET_BACKEND_URL); // ensure it's defined
         if ((data?.role === Role.Student || data?.role === Role.Instructor || data?.role ===Role.Admin) && SOCKET_BACKEND_URL) {
-            // const transports = IS_LOCAL_ENV
-            //     ? ['polling', 'websocket']  // locally
-            //     : ['websocket'];            // production
 
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
-                    // path: "/socket.io",
-                    transports: ['websocket'],
-                    // secure: true,
-                    // withCredentials: true,
                     query: {
                         userId: data._id
                     }
