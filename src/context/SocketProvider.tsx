@@ -54,6 +54,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
                     path: "/socket.io",
                     transports: transports,
+                    secure: true,
+                    withCredentials: true,
                     query: {
                         userId: data._id
                     }
