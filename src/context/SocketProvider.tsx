@@ -19,7 +19,7 @@ interface SocketProviderProps {
 }
 
 const SOCKET_BACKEND_URL = import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL;
-const IS_LOCAL_ENV = import.meta.env.VITE_MODE === 'development'; 
+// const IS_LOCAL_ENV = import.meta.env.VITE_MODE === 'development'; 
 // const SOCKET_BACKEND_URL = IS_LOCAL_ENV?import.meta.env.VITE_REACT_APP_SOCKET_BACKEND_URL:import.meta.env.VITE_REACT_SOCKET_URL;
 
 export const SocketContext = createContext<SocketContextType | null>(null);
