@@ -49,13 +49,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         if ((data?.role === Role.Student || data?.role === Role.Instructor || data?.role ===Role.Admin) && SOCKET_BACKEND_URL) {
             const transports = IS_LOCAL_ENV
                 ? ['polling', 'websocket']  // locally
-                : ['websocket', 'polling'];            // production
+                : ['websocket'];            // production
 
                 const newSocket: Socket = io(SOCKET_BACKEND_URL, {
                     path: "/socket.io",
                     transports: transports,
                     secure: true,
-                    withCredentials: true,
+                    // withCredentials: true,
                     query: {
                         userId: data._id
                     }
