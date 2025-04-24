@@ -43,7 +43,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatMessageDate = (date?: Date | string): string => {
-    // Ensure we have a Date object
     const messageDate = date ? new Date(date) : new Date();
     const today = new Date();
     
@@ -63,7 +62,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   };
 
   const formatTime = (date?: Date | string): string => {
-    // Ensure we have a Date object
     const dateObj = date ? new Date(date) : new Date();
     return dateObj.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -194,12 +192,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         );
       case contentType.file:
         return (
-          <div className="mt-1 bg-gray-100 p-3 rounded-lg inline-block">
+          <div className="mt-1 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg inline-block">
             <a 
               href={message.fileUrl || '#'} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center text-blue-600 hover:underline"
+              className="flex items-center text-blue-600 dark:text-blue-400 hover:underline"
             >
               <Paperclip size={16} className="mr-2" />
               <span>{message.content}</span>
@@ -218,7 +216,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         );
       case contentType.audio:
         return (
-          <div className="mt-1 bg-gray-100 p-3 rounded-lg">
+          <div className="mt-1 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
             <audio src={message.fileUrl || ''} controls className="w-full" />
           </div>
         );
@@ -234,11 +232,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     const replySender = getUserById(replyMessage.sender);
     
     return (
-      <div className="bg-gray-100 p-2 rounded-lg mb-2 border-l-4 border-gray-300">
-        <div className="text-xs text-gray-600 font-medium">
+      <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mb-2 border-l-4 border-gray-300 dark:border-gray-600">
+        <div className="text-xs text-gray-600 dark:text-gray-300 font-medium">
           Reply to {replySender ? `${replySender.firstName} ${replySender.lastName}` : 'Unknown'}
         </div>
-        <div className="text-sm text-gray-700 truncate">
+        <div className="text-sm text-gray-700 dark:text-gray-200 truncate">
           {replyMessage.contentType === contentType.text 
             ? replyMessage.content 
             : `${replyMessage.contentType} attachment`}
@@ -265,14 +263,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 flex items-center">
         {onBack && (
           <button 
             onClick={onBack}
-            className="mr-3 p-1 rounded-md hover:bg-gray-100"
+            className="mr-3 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            <ArrowLeft size={24} className="text-gray-600" />
+            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
         )}
         <img 
@@ -281,20 +279,20 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           className="w-10 h-10 rounded-full object-cover mr-3"
         />
         <div className="flex-grow">
-          <h2 className="font-medium text-gray-900">{getChatName()}</h2>
-          <p className="text-xs text-gray-500">{getParticipantsStatus()}</p>
+          <h2 className="font-medium text-gray-900 dark:text-white">{getChatName()}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-300">{getParticipantsStatus()}</p>
         </div>
-        <button className="p-2 rounded-full hover:bg-gray-100">
-          <MoreVertical size={20} className="text-gray-600" />
+        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+          <MoreVertical size={20} className="text-gray-600 dark:text-gray-300" />
         </button>
       </div>
       
       {chat ? (
-        <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
+        <div className="flex-grow overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
           {Object.keys(groupedMessages).map(date => (
             <div key={date}>
               <div className="flex justify-center my-4">
-                <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-3 py-1 rounded-full">
                   {date}
                 </span>
               </div>
@@ -306,7 +304,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                   
                   return (
                     <motion.div
-                      key={message._id || Math.random().toString()} // Fallback key if _id is undefined
+                      key={message._id || Math.random().toString()}
                       variants={messageVariants}
                       initial="hidden"
                       animate="visible"
@@ -322,7 +320,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                               alt={`${sender?.firstName} ${sender?.lastName}`} 
                               className="w-6 h-6 rounded-full mr-2"
                             />
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
                               {sender ? `${sender.firstName} ${sender.lastName}` : (chat.name?chat.name:'Unknown User')}
                             </span>
                           </div>
@@ -334,8 +332,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                           <div 
                             className={`inline-block rounded-lg px-4 py-2 ${
                               isCurrentUser 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-gray-200 text-gray-800'
+                                ? 'bg-blue-600 dark:bg-blue-500 text-white' 
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
                             }`}
                           >
                             {renderMessageContent(message)}
@@ -346,18 +344,18 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                           </div>
                           
                           <div className="flex items-center mt-1">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-300">
                               {formatTime(message.createdAt)}
                             </span>
                             
                             {isCurrentUser && (
                               <span className="ml-1">
                                 {isReadByAll(message) ? (
-                                  <CheckCheck size={14} className="text-blue-500" />
+                                  <CheckCheck size={14} className="text-blue-500 dark:text-blue-400" />
                                 ) : isReadBySome(message) ? (
-                                  <CheckCheck size={14} className="text-gray-400" />
+                                  <CheckCheck size={14} className="text-gray-400 dark:text-gray-300" />
                                 ) : (
-                                  <Check size={14} className="text-gray-400" />
+                                  <Check size={14} className="text-gray-400 dark:text-gray-300" />
                                 )}
                               </span>
                             )}
@@ -365,7 +363,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                           
                           {message.reactions && message.reactions.length > 0 && (
                             <div className={`flex mt-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                              <div className="bg-white rounded-full px-2 py-1 shadow-sm border border-gray-100 flex">
+                              <div className="bg-white dark:bg-gray-800 rounded-full px-2 py-1 shadow-sm border border-gray-100 dark:border-gray-600 flex">
                                 {message.reactions.map((reaction, index) => (
                                   <span key={reaction.userId || index} className="mr-1 last:mr-0">
                                     {reaction.emoji}
@@ -377,20 +375,20 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                           
                           <div className={`absolute top-0 ${
                             isCurrentUser ? 'left-0 -translate-x-full' : 'right-0 translate-x-full'
-                          } hidden group-hover:flex bg-white rounded-lg shadow-md border border-gray-100`}>
+                          } hidden group-hover:flex bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-600`}>
                             <button 
-                              className="p-2 hover:bg-gray-100 rounded-l-lg"
+                              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
                               onClick={() => setReplyTo(message)}
                             >
-                              <Reply size={16} className="text-gray-600" />
+                              <Reply size={16} className="text-gray-600 dark:text-gray-300" />
                             </button>
                             {isCurrentUser && (
                               <>
-                                <button className="p-2 hover:bg-gray-100">
-                                  <Edit size={16} className="text-gray-600" />
+                                <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                  <Edit size={16} className="text-gray-600 dark:text-gray-300" />
                                 </button>
-                                <button className="p-2 hover:bg-gray-100 rounded-r-lg">
-                                  <Trash size={16} className="text-gray-600" />
+                                <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg">
+                                  <Trash size={16} className="text-gray-600 dark:text-gray-300" />
                                 </button>
                               </>
                             )}
@@ -406,45 +404,45 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           <div ref={messagesEndRef} />
         </div>
       ) : (
-        <div className="flex-grow flex items-center justify-center bg-gray-50">
+        <div className="flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-900">
           <div className="text-center">
-            <MessageCircle size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium text-gray-600">Please chat with your instructor</h3>
-            <p className="text-gray-500 mt-2">Select a conversation from the list to start messaging</p>
+            <MessageCircle size={48} className="mx-auto text-gray-400 dark:text-gray-300 mb-4" />
+            <h3 className="text-xl font-medium text-gray-600 dark:text-gray-300">Please chat with your instructor</h3>
+            <p className="text-gray-500 dark:text-gray-300 mt-2">Select a conversation from the list to start messaging</p>
           </div>
         </div>
       )}
       
       {replyTo && chat && (
-        <div className="px-4 py-2 bg-gray-100 border-t border-gray-200 flex items-center">
+        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex items-center">
           <div className="flex-grow">
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-gray-600 dark:text-gray-300">
               Replying to {getUserById(replyTo.sender) ? 
                 `${getUserById(replyTo.sender)?.firstName} ${getUserById(replyTo.sender)?.lastName}` : 'Unknown'}
             </div>
-            <div className="text-sm text-gray-700 truncate">
+            <div className="text-sm text-gray-700 dark:text-gray-200 truncate">
               {replyTo.content}
             </div>
           </div>
           <button 
-            className="ml-2 p-1 hover:bg-gray-200 rounded-full"
+            className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
             onClick={() => setReplyTo(null)}
           >
-            <X size={16} className="text-gray-600" />
+            <X size={16} className="text-gray-600 dark:text-gray-300" />
           </button>
         </div>
       )}
       
       {chat && (
-        <div className="p-3 border-t border-gray-200">
+        <div className="p-3 border-t border-gray-200 dark:border-gray-600">
           <form onSubmit={handleSendMessage} className="flex items-end">
             <div className="flex items-center mr-2">
               <button 
                 type="button" 
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={handleFileUpload}
               >
-                <Paperclip size={20} className="text-gray-600" />
+                <Paperclip size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
               <input 
                 type="file" 
@@ -460,12 +458,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                 }}
               />
               
-              <button type="button" className="p-2 rounded-full hover:bg-gray-100">
-                <Image size={20} className="text-gray-600" />
+              <button type="button" className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <Image size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
               
-              <button type="button" className="p-2 rounded-full hover:bg-gray-100">
-                <Mic size={20} className="text-gray-600" />
+              <button type="button" className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <Mic size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
             </div>
             
@@ -474,18 +472,18 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
-                className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300"
                 rows={1}
                 style={{ maxHeight: '120px', minHeight: '40px' }}
               />
               <button type="button" className="absolute right-3 bottom-2">
-                <Smile size={20} className="text-gray-600" />
+                <Smile size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
             </div>
             
             <button 
               type="submit" 
-              className="ml-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="ml-2 p-2 bg-blue-600 dark:bg-blue-500 text-white rounded-full hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2"
               disabled={!newMessage.trim()}
             >
               <Send size={20} />

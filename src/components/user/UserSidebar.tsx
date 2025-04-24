@@ -20,6 +20,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux';
 import { logoutAction } from '../../redux/store/actions/auth';
 import ConfirmationModal from '../common/Toast/ConfirmationModal';
+import { Link } from 'react-router-dom'; 
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -130,14 +131,16 @@ const UserSidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleTheme }) => {
           {/* Logo */}
           <div className="flex items-center justify-between px-4 py-6">
             <div className={`${isOpen ? 'active' : 'hidden'} flex items-center`}>
-              <img
-                src={LogoCondent}
-                alt="EduSprint"
-                className="h-24 w-48"
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/32';
-                }}
-              />
+            <Link to="/home">
+  <img
+    src={LogoCondent}
+    alt="EduSprint"
+    className="h-24 w-48"
+    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+      e.currentTarget.src = 'https://via.placeholder.com/32';
+    }}
+  />
+</Link>
             </div>
             <button
               onClick={toggleSidebar}

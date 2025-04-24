@@ -47,7 +47,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ enrollment }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden h-full flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden h-full flex flex-col">
       <div className="relative h-48 overflow-hidden">
         <img
           src={course?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'}
@@ -58,24 +58,22 @@ export const CourseCard: React.FC<CourseCardProps> = ({ enrollment }) => {
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-center text-white">
             <Clock className="w-4 h-4 mr-2" />
-            <span className="text-sm">
-              {course?.lessons?.length || 0} lessons
-            </span>
+            <span className="text-sm">{course?.lessons?.length || 0} lessons</span>
           </div>
         </div>
       </div>
-      
+
       <div className="p-5 flex-grow flex flex-col">
-        <h3 className="text-lg font-bold mb-2 text-gray-800 line-clamp-2">
+        <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-white line-clamp-2">
           {course?.title}
         </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 flex-grow">
           {course?.description}
         </p>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center text-gray-600 dark:text-gray-300">
               <BookOpen className="w-4 h-4 mr-1" />
               <span className="text-sm">{formatLevel(course?.level)}</span>
             </div>
@@ -84,8 +82,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ enrollment }) => {
               <span className="text-sm font-medium">{completionStatus}</span>
             </div>
           </div>
-          
-          <div className="flex items-center justify-between text-gray-600 text-sm">
+
+          <div className="flex items-center justify-between text-gray-600 dark:text-gray-300 text-sm">
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
               <span>{daysSinceEnrollment} days ago</span>
@@ -95,15 +93,15 @@ export const CourseCard: React.FC<CourseCardProps> = ({ enrollment }) => {
               <span>{course?.instructor?.userName || 'Instructor'}</span>
             </div>
           </div>
-          
+
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-1">
-              <span className="font-medium text-gray-700">Progress</span>
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-200">Progress</span>
+              <span className="font-medium text-gray-700 dark:text-gray-200">
                 {progress?.overallCompletionPercentage?.toFixed(0) || 0}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
               <motion.div
                 className={`${getProgressColor(progress?.overallCompletionPercentage)} h-2.5 rounded-full`}
                 initial={{ width: 0 }}

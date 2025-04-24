@@ -78,14 +78,14 @@ const Navbar = () => {
 
   const navItems = !userData
     ? [
-        { name: 'Home', path: '/' },
+        { name: 'Home', path: '/home' },
         { name: 'Courses', path: '/courses' },
         { name: 'Teach Us', path: '/teach-us' },
-        { name: 'Contact Us', path: '/contact-us' },
+        // { name: 'Contact Us', path: '/contact-us' },
         { name: 'About Us', path: '/about-us' },
       ]
     : [
-        { name: 'Home', path: '/' },
+        { name: 'Home', path: '/home' },
         { name: 'Courses', path: '/courses' },
         ...(userData.isRequested ? [] : [{ name: 'Register', path: `/${userData.role}-form` }]),
         { name: 'About Us', path: '/about-us' },
@@ -94,12 +94,12 @@ const Navbar = () => {
   const avatar = userData?.profile?.avatar as string;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-sm z-50 transition-all duration-300">
+    <nav className="fixed top-0 left-0 right-0 w-full bg-transparent  z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/">
+            <Link to="/home">
               <img className="h-12 sm:h-14 lg:h-16 w-auto transition-transform duration-300 hover:scale-105" src={logo} alt="Logo" />
             </Link>
           </div>
@@ -139,6 +139,7 @@ const Navbar = () => {
                 
                 {userData ? (
                   <>
+                  <Link to={`/${userData.role}/profile`}>
                     <div className="flex items-center space-x-2">
                       <img
                         className="h-10 w-10 rounded-full border-2 border-gray-300 dark:border-gray-500 hover:border-green-600 dark:hover:border-green-500 transition-all duration-300"
@@ -147,6 +148,7 @@ const Navbar = () => {
                       />
                       <span className="text-gray-900 dark:text-gray-100 text-sm hidden md:block">{userData.userName}</span>
                     </div>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="text-gray-900 dark:text-gray-100 text-sm h-10 w-24 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 hover:text-red-600 dark:hover:text-red-400 border border-gray-300 dark:border-gray-500 hover:border-red-600 dark:hover:border-red-500 transition-all duration-300"

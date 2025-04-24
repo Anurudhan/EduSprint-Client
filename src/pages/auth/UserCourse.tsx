@@ -7,14 +7,11 @@ import { CourseEntity, FilterState } from "../../types/ICourse";
 import { useAppDispatch } from "../../hooks/hooks";
 import { getAllCourse } from "../../redux/store/actions/course/getAllCourse";
 import LoadingSpinner from "../../components/common/loadingSpinner";
-import { useLocation } from "react-router-dom";
 import { SearchX } from "lucide-react";
 import { MessageType } from "../../types/IMessageType";
 import MessageToast from "../../components/common/Toast/MessageToast";
 
 function UserCourse() {
-  const location = useLocation();
-  const nav = ["/course"].some((path) => location.pathname.includes(path));
   const [courses, setCourses] = useState<CourseEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
@@ -105,7 +102,7 @@ function UserCourse() {
   
 
   return (
-    <div className={`container mx-auto px-4 py-8 ${nav ? "mt-12" : ""}`}>
+    <div className={`container mx-auto px-4 py-20 min-h-screen `}>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4 pl-5">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center lg:text-left">
           Explore Courses

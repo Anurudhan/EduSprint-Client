@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Users, CheckCheck } from "lucide-react";
 import { IChat, SignupFormData } from "../../types";
@@ -9,7 +10,7 @@ interface ChatListProps {
   currentUser: SignupFormData | null;
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
-  onlineUsers:{ userId: string; socketId?: string }[]|[];
+  onlineUsers: { userId: string; socketId?: string }[] | [];
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -24,7 +25,7 @@ const ChatList: React.FC<ChatListProps> = ({
   };
 
   const getChatName = (chat: IChat): string => {
-    if (!chat._id) return "Unnamed Chat"; // Fallback for missing _id
+    if (!chat._id) return "Unnamed Chat";
     if (chat.chatType === "group") {
       return chat.name || "Unnamed Group";
     } else {
@@ -33,7 +34,7 @@ const ChatList: React.FC<ChatListProps> = ({
       );
       if (otherParticipantId) {
         const otherUser = getUserById(otherParticipantId);
-        return otherUser?.userName ||chat.name|| "Unknown User";
+        return otherUser?.userName || chat.name || "Unknown User";
       }
       return "Unknown User";
     }
@@ -52,7 +53,7 @@ const ChatList: React.FC<ChatListProps> = ({
       if (otherParticipantId) {
         const otherUser = getUserById(otherParticipantId);
         return (
-          (otherUser?.profile?.avatar as string) ||chat.avatar||
+          (otherUser?.profile?.avatar as string) || chat.avatar ||
           "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80"
         );
       }
@@ -79,7 +80,6 @@ const ChatList: React.FC<ChatListProps> = ({
   };
 
   const sortedChats = [...chats].sort((a, b) => {
-    // Safely access the timestamps with fallbacks
     const getTimestamp = (chat: IChat) => {
       if (chat.lastMessage?.timestamp instanceof Date) {
         return chat.lastMessage.timestamp.getTime();
@@ -90,23 +90,22 @@ const ChatList: React.FC<ChatListProps> = ({
       } else if (chat.updatedAt) {
         return new Date(chat.updatedAt).getTime();
       } else {
-        return 0; // Fallback for chats without timestamp
+        return 0;
       }
     };
   
     return getTimestamp(b) - getTimestamp(a);
   });
-  
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800">Messages</h2>
+    <div className="h-full flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Messages</h2>
       </div>
 
       <div className="overflow-y-auto flex-grow">
         {sortedChats.map((chat) => {
-          if (!chat._id) return null; // Skip chats without _id
+          if (!chat._id) return null;
 
           const chatName = getChatName(chat);
           const avatar = getChatAvatar(chat);
@@ -118,13 +117,13 @@ const ChatList: React.FC<ChatListProps> = ({
           const lastMessageContent =
             chat.lastMessage?.content || "No messages yet";
           const isSelected = selectedChatId === chat._id;
-          console.log(chat,"this is chat")
+
           return (
             <div
               key={chat._id}
-              onClick={() => chat._id && onSelectChat(chat._id)} // Add check here
-              className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                isSelected ? "bg-blue-50" : ""
+              onClick={() => chat._id && onSelectChat(chat._id)}
+              className={`p-3 border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                isSelected ? "bg-blue-50 dark:bg-blue-900/20" : ""
               }`}
             >
               <div className="flex items-start">
@@ -135,31 +134,31 @@ const ChatList: React.FC<ChatListProps> = ({
                     className="w-12 h-12 rounded-full object-cover"
                   />
                   {chat.chatType === "group" ? (
-                    <span className="absolute bottom-0 right-0 bg-gray-100 p-1 rounded-full">
-                      <Users size={12} className="text-gray-600" />
+                    <span className="absolute bottom-0 right-0 bg-gray-100 dark:bg-gray-700 p-1 rounded-full">
+                      <Users size={12} className="text-gray-600 dark:text-gray-300" />
                     </span>
                   ) : (
                     getUserById(
                       chat.participants.find((id) => id !== currentUser?._id) ||
                         ""
                     )?.isOnline && (
-                      <span className="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></span>
+                      <span className="absolute bottom-0 right-0 bg-green-500 dark:bg-green-400 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800"></span>
                     )
                   )}
                 </div>
 
                 <div className="flex-grow min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <h3 className="font-medium text-gray-900 dark:text-white truncate">
                       {chatName}
                     </h3>
-                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-300 whitespace-nowrap ml-2">
                       {lastMessageTime}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center mt-1">
-                    <p className="text-sm text-gray-600 truncate">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
                       {chat.lastMessage && (
                         <span className="inline-flex items-center">
                           {lastMessageSender && `${lastMessageSender}: `}
@@ -170,12 +169,12 @@ const ChatList: React.FC<ChatListProps> = ({
 
                     <div className="flex items-center ml-2">
                       {unreadCount > 0 ? (
-                        <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        <span className="bg-blue-500 dark:bg-blue-400 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       ) : chat.lastMessage &&
                         chat.lastMessage.sender !== currentUser?._id ? (
-                        <CheckCheck size={16} className="text-gray-400" />
+                        <CheckCheck size={16} className="text-gray-400 dark:text-gray-300" />
                       ) : null}
                     </div>
                   </div>
