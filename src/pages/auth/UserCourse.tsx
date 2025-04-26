@@ -15,8 +15,8 @@ function UserCourse() {
   const [courses, setCourses] = useState<CourseEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
-  const [message,setMessage] = useState("");
-  const type:MessageType = "info";
+  const [message, setMessage] = useState("");
+  const type: MessageType = "info";
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     category: "",
@@ -29,6 +29,12 @@ function UserCourse() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 9;
+
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [filters]);
+
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
@@ -56,53 +62,17 @@ function UserCourse() {
 
     fetchCourses();
   }, [currentPage, filters, dispatch]);
-  console.log(courses,"this is data");
 
-  // const filteredCourses = useMemo(() => {
-  //   console.log(filters,"Running useMemo for filtering");
-  //   return courses.filter((course) => {
-  //     const matchesSearch =
-  //       (course.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
-  //         course.description
-  //           ?.toLowerCase()
-  //           .includes(filters.search.toLowerCase())) ??
-  //       false;
-  //     const matchesCategory =
-  //       !filters.category || course.categoryRef === filters.category;
-  //     const matchesPriceType =
-  //       !filters.priceType || course.pricing?.type === filters.priceType;
-  //     const matchesPrice =
-  //       (!filters.priceType || filters.priceType === "paid") &&
-  //       (course.pricing?.amount ?? 0) >= filters.minPrice &&
-  //       (!filters.maxPrice ||
-  //         (course.pricing?.amount ?? 0) <= filters.maxPrice);
-  //     const matchesLevel = !filters.level || course.level === filters.level;
-  //     const matchesRating = (course.rating ?? 0) >= filters.minRating;
+  const handleMessage = (message: string) => {
+    setMessage(message);
+  };
 
-  //     return (
-  //       matchesSearch &&
-  //       matchesCategory &&
-  //       matchesPriceType &&
-  //       matchesPrice &&
-  //       matchesLevel &&
-  //       matchesRating
-  //     );
-  //   });
-  // }, [filters, courses]);
-
-  const paginatedCourses = courses.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-  const handleMessage = (message :string)=>{
-    setMessage(message)
-  }
-  // console.log(filteredCourses, "Filtered Courses");
-  console.log(paginatedCourses, "Paginated Courses");
-  
+  const handleSearchChange = (value: string) => {
+    setFilters({ ...filters, search: value });
+  };
 
   return (
-    <div className={`container mx-auto px-4 py-20 min-h-screen `}>
+    <div className={`container mx-auto px-4 py-20 min-h-screen`}>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4 pl-5">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center lg:text-left">
           Explore Courses
@@ -110,7 +80,7 @@ function UserCourse() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 lg:gap-8 lg:justify-start w-full lg:w-auto">
           <SearchBar
             value={filters.search}
-            onChange={(value) => setFilters({ ...filters, search: value })}
+            onChange={handleSearchChange}
           />
           <div className="mt-4 sm:mt-0 sm:ml-4 flex justif-end sm:flex-row flex-col">
             <Filters filters={filters} onFilterChange={setFilters} />
@@ -120,13 +90,12 @@ function UserCourse() {
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedCourses.map((course) => {
-            console.log(course,"what is there");
-            return <CourseCard key={course._id} course={course} onMessage={handleMessage}/>
-        })}
+          {courses.map((course) => (
+            <CourseCard key={course._id} course={course} onMessage={handleMessage} />
+          ))}
         </div>
 
-        {courses.length === 0 && (
+        {courses.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-full py-8 text-center pt-28 pb-28">
             <div className="text-6xl text-gray-500 dark:text-gray-400 mb-4">
               <SearchX />
@@ -150,7 +119,7 @@ function UserCourse() {
           </div>
         )}
       </div>
-      {message&&<MessageToast message={message} type={type} onMessage={handleMessage}/>}
+      {message && <MessageToast message={message} type={type} onMessage={handleMessage} />}
       {loading && <LoadingSpinner />}
     </div>
   );

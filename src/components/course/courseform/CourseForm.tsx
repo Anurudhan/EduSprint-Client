@@ -7,7 +7,7 @@ import { CourseEntity, Level, PricingType } from "../../../types/ICourse";
 import {
   uploadToCloudinary,
   uploadVideoToCloudinary,
-  deleteFromCloudinary, // Import the new function
+  deleteFromCloudinary,
 } from "../../../utilities/axios/claudinary";
 import { useAppDispatch } from "../../../hooks/hooks";
 import { addCourse } from "../../../redux/store/actions/course/addCourse";
@@ -17,19 +17,37 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { editCourse } from "../../../redux/store/actions/course/editCourse";
 import { ToastService } from "../../common/Toast/ToastifyV1";
 
+// Key for storing form data in localStorage
+const COURSE_FORM_DATA_KEY = "courseFormData";
+const COURSE_FORM_STEP_KEY = "courseFormStep";
+
 export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | null }) {
-  const [course, setCourse] = useState<Partial<CourseEntity>>({
-    title: courseDetails?.title ?? "",
-    description: courseDetails?.description || "",
-    thumbnail: courseDetails?.thumbnail || "",
-    language: "English",
-    level: courseDetails?.level || Level.beginner,
-    pricing: courseDetails?.pricing || {
-      type: PricingType.paid,
-      amount: 0,
-    },
-    categoryRef: courseDetails?.categoryRef || "",
-    lessons: courseDetails?.lessons || [],
+  // Initialize course state from localStorage or props
+  const [course, setCourse] = useState<Partial<CourseEntity>>(() => {
+    // Try to get saved form data from localStorage
+    const savedFormData = localStorage.getItem(COURSE_FORM_DATA_KEY);
+    if (savedFormData) {
+      try {
+        return JSON.parse(savedFormData);
+      } catch (error) {
+        console.error("Error parsing saved form data:", error);
+      }
+    }
+    
+    // Fall back to courseDetails prop or default values
+    return {
+      title: courseDetails?.title ?? "",
+      description: courseDetails?.description || "",
+      thumbnail: courseDetails?.thumbnail || "",
+      language: "English",
+      level: courseDetails?.level || Level.beginner,
+      pricing: courseDetails?.pricing || {
+        type: PricingType.paid,
+        amount: 0,
+      },
+      categoryRef: courseDetails?.categoryRef || "",
+      lessons: courseDetails?.lessons || [],
+    };
   });
 
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(course.thumbnail ?? null);
@@ -48,7 +66,7 @@ export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | n
 
   // Multi-step form logic
   const [step, setStep] = useState<number>(() => {
-    return parseInt(localStorage.getItem("courseFormStep") || "0", 10);
+    return parseInt(localStorage.getItem(COURSE_FORM_STEP_KEY) || "0", 10);
   });
 
   // Store original lesson videos for tracking changes
@@ -64,19 +82,27 @@ export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | n
     }
   }, [courseDetails]);
 
-  // Clear localStorage when component unmounts or when navigating away
+  // Save course data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("courseFormStep", step.toString());
-    return () => {
-      localStorage.removeItem("courseFormStep");
-    };
+    localStorage.setItem(COURSE_FORM_DATA_KEY, JSON.stringify(course));
+  }, [course]);
+
+  // Save current step to localStorage
+  useEffect(() => {
+    localStorage.setItem(COURSE_FORM_STEP_KEY, step.toString());
   }, [step]);
 
+  // Clear localStorage when component unmounts or when navigating away
   useEffect(() => {
     return () => {
-      localStorage.removeItem("courseFormStep");
+      // Only clear localStorage if not submitting the form
+      // This prevents data loss during navigation caused by form submission
+      if (!isSubmitting) {
+        localStorage.removeItem(COURSE_FORM_STEP_KEY);
+        localStorage.removeItem(COURSE_FORM_DATA_KEY);
+      }
     };
-  }, [location]);
+  }, [location, isSubmitting]);
 
   // Basic info validation (Step 0)
   const validateBasicInfo = (): boolean => {
@@ -350,22 +376,32 @@ export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | n
 
       if (!response.payload.success) {
         ToastService.error(response.payload?.message || "An unexpected error occurred");
+        setIsSubmitting(false);
       } else {
         // If edit was successful, clean up any unused files
         if (courseDetails) {
           await cleanupUnusedFiles();
         }
         
-        localStorage.removeItem("courseFormStep");
+        // Clear localStorage after successful submission
+        localStorage.removeItem(COURSE_FORM_STEP_KEY);
+        localStorage.removeItem(COURSE_FORM_DATA_KEY);
+        
         ToastService.success(response.payload.message);
         navigate("/instructor/mycourses", { state: { message: response.payload.message } });
       }
     } catch (error) {
       console.log(error,"this is the error I facig");
       ToastService.error("An unexpected error occurred");
-    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Function to reset form data
+  const resetFormData = () => {
+    localStorage.removeItem(COURSE_FORM_STEP_KEY);
+    localStorage.removeItem(COURSE_FORM_DATA_KEY);
+    window.location.reload();
   };
 
   const renderStep = () => {
@@ -387,7 +423,7 @@ export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | n
             course={course}
             setCourse={setCourse}
             onVideoUpload={handleVideoUpload}
-            onLessonDelete={handleLessonDelete} // Pass the new delete handler
+            onLessonDelete={handleLessonDelete}
             progress={progress}
             errors={errors}
           />
@@ -403,9 +439,30 @@ export function CourseForm({ courseDetails }: { courseDetails?: CourseEntity | n
   return (
     <div className="bg-gray-100 min-h-screen py-10">
       <div className="max-w-4xl mx-auto p-8 bg-white rounded-xl shadow-md">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">
-          {courseDetails ? "Edit Course" : "Create New Course"}
-        </h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-800">
+            {courseDetails ? "Edit Course" : "Create New Course"}
+          </h2>
+          
+          {/* Add reset button */}
+          {localStorage.getItem(COURSE_FORM_DATA_KEY) && (
+            <button
+              type="button"
+              onClick={resetFormData}
+              className="px-4 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+            >
+              Reset Form Data
+            </button>
+          )}
+        </div>
+        
+        <div className="border-b pb-4 mb-6">
+          {localStorage.getItem(COURSE_FORM_DATA_KEY) && (
+            <p className="text-sm text-green-600 mb-2">
+              <span className="font-medium">✓</span> Your progress is being saved automatically
+            </p>
+          )}
+        </div>
 
         <div className="mb-6">
           <div className="flex justify-between items-center">

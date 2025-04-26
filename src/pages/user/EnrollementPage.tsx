@@ -42,7 +42,7 @@ function EnrollmentPage() {
   const handleFetchEnrollment = useCallback(async () => {
     try {
       if (data && data._id) {
-        const response = await dispatch(getEnrollmentByUserIdAction(data._id));
+        const response = await dispatch(getEnrollmentByUserIdAction({userId:data._id,page:1,limit:0,search:""}));
         response.payload.data.forEach((item: EnrollmentEntity) => {
           if (item?.courseId === course._id) {
             setIsEnrolled(true);

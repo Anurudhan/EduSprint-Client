@@ -4,9 +4,9 @@ import { CLIENT_API } from "../../../../utilities/axios/instance";
 import { config } from "../../../../common/config";
 
 export const getCoursesByInstructorIdAction = createAsyncThunk (
-    "course/getCoursesByInstructorId", async (data:{instructorId: string,pageNumber:string}, {rejectWithValue}) => {
+    "course/getCoursesByInstructorId", async (data:{instructorId: string,pageNumber:string,searchQuery:string}, {rejectWithValue}) => {
         try {
-            const response = await CLIENT_API.get(`/course/instructor-courses?instructorId=${data.instructorId}&page=${data.pageNumber}&limit=${"6"}`,config)
+            const response = await CLIENT_API.get(`/course/instructor-courses?instructorId=${data.instructorId}&page=${data.pageNumber}&limit=${"6"}&search=${data.searchQuery?data.searchQuery:""}`,config)
 
             if (response.data.success) {
 				return response.data;

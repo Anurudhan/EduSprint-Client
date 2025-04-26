@@ -10,9 +10,11 @@ import LoadingSpinner from "../../../components/common/loadingSpinner";
 import { motion } from "framer-motion";
 import debounce from "lodash.debounce";
 
+// Modify the debounce function to accept both pageNumber and searchQuery
 const createDebouncedFetch = (
-  callback: (pageNumber: number) => Promise<void>
+  callback: (pageNumber: number, searchQuery: string) => Promise<void>
 ) => debounce(callback, 500);
+
 export function Courses() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data } = useSelector((state: RootState) => state.user);
@@ -31,16 +33,20 @@ export function Courses() {
         return "bg-purple-100 text-purple-800";
     }
   };
+  
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  
+  // Updated fetchCoursesCallback to include searchQuery
   const fetchCoursesCallback = useCallback(
-    async (pageNumber: number) => {
+    async (pageNumber: number, query: string) => {
       setLoading(true);
       try {
         const response = await dispatch(
           getCoursesByInstructorIdAction({
             instructorId: data?._id as string,
             pageNumber: pageNumber.toString(),
+            searchQuery: query // Add searchQuery to the action payload
           })
         );
         if (response.payload.success) {
@@ -64,13 +70,22 @@ export function Courses() {
     [fetchCoursesCallback]
   );
 
+  // Handle search input changes with debounce
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setPage(1); // Reset to first page when searching
+    fetchCourses(1, query);
+  };
+
   useEffect(() => {
-    fetchCourses(page);
+    fetchCourses(page, searchQuery);
     return () => {
       fetchCourses.cancel();
     };
-  }, [page, fetchCourses]);
-  if(loading) return <LoadingSpinner />
+  }, [page, fetchCourses,searchQuery]);
+  
+  if(loading && courses.length === 0) return <LoadingSpinner />;
 
   return (
     <div>
@@ -92,27 +107,42 @@ export function Courses() {
             placeholder="Search your courses..."
             className="w-full pl-10 pr-4 py-2 border rounded-md"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
           />
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
         </div>
       </div>
 
-      {courses.length === 0 ? (
+      {courses.length === 0 && !loading ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No courses yet
+            {searchQuery ? "No courses found matching your search" : "No courses yet"}
           </h3>
           <p className="text-gray-500 mb-4">
-            Create your first course to start teaching.
+            {searchQuery 
+              ? "Try adjusting your search terms or browse all courses."
+              : "Create your first course to start teaching."}
           </p>
-          <Link
-            to="/instructor/create-course"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Create Course
-          </Link>
+          {!searchQuery && (
+            <Link
+              to="/instructor/create-course"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create Course
+            </Link>
+          )}
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                fetchCourses(1, "");
+              }}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Show All Courses
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -193,8 +223,8 @@ export function Courses() {
               </div>
             </div>
           ))}
-           </div>
-            <div className="mt-8 mb-6 flex justify-center items-center">
+        </div>
+        <div className="mt-8 mb-6 flex justify-center items-center">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
