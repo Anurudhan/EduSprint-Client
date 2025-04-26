@@ -14,9 +14,8 @@ import UserChat from "../components/chat/UserChat";
 import CourseLearningV1 from "../components/course/Progress/CourseLearningV1";
 import AssessmentResultsPage from "../pages/user/AssessmentResultsPage";
 import AssessmentResultsTracking from "../components/course/Progress/AssessmentResultTracking";
+import StudentDashboard from "../pages/user/StudentDashboard";
 
-
-const StudentDashboard = lazy(() => import("../pages/user/StudentDashboard"));
 const StudentSettings = lazy(() => import("../pages/user/StudentSettings"));
 
 
